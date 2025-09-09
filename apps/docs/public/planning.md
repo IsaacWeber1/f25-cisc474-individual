@@ -197,7 +197,7 @@ Place all files **in** `apps/docs/public/` and link them below. Keep language co
      * Reflection → Complete
    * Keep to 6–12 lines each; label major regions.
 
-4. **Data Model (basic)** → `data_model.mmd`
+4. **Data Model (basic)** → `data_model.md`
 
    * A minimal Mermaid ER-style diagram with only the nouns above and the simplest relationships (no types, no indexes).
    * Example starter (expand as needed):
@@ -221,7 +221,7 @@ Place all files **in** `apps/docs/public/` and link them below. Keep language co
 * [Requirements](./requirements.md)
 * [Site Map](./sitemap.md)
 * [Wireframes](./wireframes.md)
-* [Data Model](./data_model.mmd)
+* [Data Model](./data_model.md)
 
 > When the above files exist in `apps/docs/public/`, these links should work directly in GitHub.
 
