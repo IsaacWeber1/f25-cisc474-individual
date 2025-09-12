@@ -448,7 +448,10 @@ export const getAssignmentsByCourse = (courseId: number): Assignment[] => {
 };
 
 export const getGradesByStudent = (studentId: number): Grade[] => {
-  return mockGrades.filter(grade => grade.studentId === studentId);
+  // Get grades through submissions
+  const userSubmissions = mockSubmissions.filter(s => s.studentId === studentId);
+  const submissionIds = userSubmissions.map(s => s.id);
+  return mockGrades.filter(grade => submissionIds.includes(grade.submissionId));
 };
 
 export const getAssignmentById = (assignmentId: number): Assignment | undefined => {
@@ -521,8 +524,8 @@ export const getClassMedianGrade = (courseId: number): number => {
   percentages.sort((a, b) => a - b);
   const mid = Math.floor(percentages.length / 2);
   return percentages.length % 2 === 0 
-    ? (percentages[mid - 1] + percentages[mid]) / 2 
-    : percentages[mid];
+    ? ((percentages[mid - 1] ?? 0) + (percentages[mid] ?? 0)) / 2 
+    : (percentages[mid] ?? 0);
 };
 
 export const getSkillTagsByCategory = (category?: string): SkillTag[] => {
@@ -544,7 +547,7 @@ export const getReflectionTemplatesByUser = (userId: number, courseId?: number):
   if (courseId) {
     // Filter templates that are used by assignments in this course
     const courseReflections = mockAssignments.filter(a => a.courseId === courseId && a.type === 'reflection');
-    const templateIds = courseReflections.map(a => a.reflectionTemplateId).filter(Boolean);
+    const templateIds = courseReflections.map(a => a.reflectionTemplate?.id).filter(Boolean);
     templates = templates.filter(t => templateIds.includes(t.id));
   }
   return templates;

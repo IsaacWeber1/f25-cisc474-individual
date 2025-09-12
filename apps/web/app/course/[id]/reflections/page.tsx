@@ -4,7 +4,9 @@ import {
   getCurrentUser, 
   getUserRole,
   getReflectionsByUser,
-  getReflectionTemplatesByUser 
+  getReflectionTemplatesByUser,
+  getSubmissionByStudent,
+  getGradeBySubmission
 } from '../../../_lib/mockData';
 
 interface ReflectionsListProps {
@@ -36,18 +38,22 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
   let filteredReflections = reflections;
   if (resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
     filteredReflections = reflections.filter(reflection => {
+      const submission = getSubmissionByStudent(reflection.id, currentUser.id);
+      const grade = submission ? getGradeBySubmission(submission.id) : null;
+      
       if (resolvedSearchParams.status === 'completed') {
-        return reflection.responses && reflection.responses.length > 0;
+        return submission && grade;
       } else if (resolvedSearchParams.status === 'pending') {
-        return !reflection.responses || reflection.responses.length === 0;
+        return !submission || !grade;
       }
       return true;
     });
   }
 
   const getReflectionStatus = (reflection: any) => {
-    const hasResponses = reflection.responses && reflection.responses.length > 0;
-    if (hasResponses) {
+    const submission = getSubmissionByStudent(reflection.id, currentUser.id);
+    const grade = submission ? getGradeBySubmission(submission.id) : null;
+    if (submission && grade) {
       return { status: 'completed', color: '#15803d', bg: '#dcfce7' };
     }
     return { status: 'pending', color: '#d97706', bg: '#fef3c7' };
@@ -139,7 +145,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
         {filteredReflections.length > 0 ? (
           filteredReflections.map((reflection) => {
             const statusInfo = getReflectionStatus(reflection);
-            const template = templates.find(t => t.id === reflection.templateId);
+            const template = templates.find(t => t.assignmentId === reflection.id);
 
             return (
               <div key={reflection.id} style={{
@@ -168,7 +174,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                         color: '#111827',
                         margin: 0
                       }}>
-                        {template?.title || `Reflection ${reflection.id}`}
+                        {reflection.title}
                       </h3>
                       
                       <span style={{
@@ -188,7 +194,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                       marginBottom: '1rem',
                       lineHeight: 1.5
                     }}>
-                      {template?.description || 'A guided reflection to help you think about your learning progress'}
+                      {reflection.description}
                     </p>
 
                     <div style={{

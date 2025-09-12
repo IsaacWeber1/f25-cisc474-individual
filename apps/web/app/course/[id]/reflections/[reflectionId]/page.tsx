@@ -197,7 +197,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                       backgroundColor: 'white'
                     }}
                     placeholder="Share your thoughts here..."
-                    defaultValue={submission?.responses?.[index] || ''}
+                    defaultValue={submission?.reflectionResponse?.answers?.[index.toString()] || ''}
                   />
                 </div>
               ))}
@@ -503,7 +503,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
             </div>
           </div>
 
-          {submission?.responses && template?.prompts && template.prompts.map((prompt, index) => (
+          {submission?.reflectionResponse?.answers && template?.prompts && template.prompts.map((prompt, index) => (
             <div key={index} style={{
               marginBottom: '2rem',
               padding: '1.5rem',
@@ -525,7 +525,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 lineHeight: 1.6,
                 whiteSpace: 'pre-wrap'
               }}>
-                {submission.responses[index] || 'No response provided.'}
+                {submission.reflectionResponse?.answers?.[index.toString()] || 'No response provided.'}
               </div>
             </div>
           ))}
@@ -563,7 +563,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
             color: '#6b7280',
             textAlign: 'center'
           }}>
-            Submitted on {new Date(submission?.submittedAt).toLocaleDateString()} • 
+            Submitted on {submission?.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'Unknown'} • 
             Graded on {new Date(grade.gradedAt).toLocaleDateString()}
           </div>
         </div>

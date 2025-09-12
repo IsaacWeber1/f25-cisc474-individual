@@ -32,7 +32,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
       const submission = getSubmissionByStudent(assignment.id, currentUser.id);
       const grade = submission ? getGradeBySubmission(submission.id) : null;
       
-      switch (searchParams.status) {
+      switch (resolvedSearchParams.status) {
         case 'pending':
           return !submission;
         case 'submitted':
@@ -340,7 +340,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
               No assignments found
             </h3>
             <p style={{ color: '#6b7280' }}>
-              {searchParams.type || searchParams.status ? 
+              {resolvedSearchParams.type || resolvedSearchParams.status ? 
                 'Try adjusting your filters to see more assignments.' : 
                 'No assignments have been created for this course yet.'
               }

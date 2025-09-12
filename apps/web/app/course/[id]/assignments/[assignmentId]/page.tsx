@@ -410,7 +410,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
                           color: '#374151',
                           marginBottom: '0.5rem'
                         }}>
-                          File submitted: {submission.fileName}
+                          File submitted: {submission.files?.[0] || 'file.pdf'}
                         </p>
                         <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
                           Submitted on {new Date(submission.submittedAt).toLocaleDateString()}
