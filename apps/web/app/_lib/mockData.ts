@@ -549,3 +549,41 @@ export const getReflectionTemplatesByUser = (userId: number, courseId?: number):
   }
   return templates;
 };
+
+export const getReflectionTemplatesByAssignment = (assignmentId: number): ReflectionTemplate[] => {
+  return mockReflectionTemplates.filter(t => t.assignmentId === assignmentId);
+};
+
+export const getPeerBenchmark = (courseId: number): number => {
+  // Return the class median grade for peer benchmarking
+  return getClassMedianGrade(courseId);
+};
+
+export const getRecentFeedback = (userId: number, limit: number = 3): string[] => {
+  // Get recent feedback from grades
+  const userSubmissions = mockSubmissions.filter(s => s.studentId === userId);
+  const submissionIds = userSubmissions.map(s => s.id);
+  const gradesWithFeedback = mockGrades
+    .filter(g => submissionIds.includes(g.submissionId) && g.feedback)
+    .sort((a, b) => new Date(b.gradedAt).getTime() - new Date(a.gradedAt).getTime())
+    .slice(0, limit);
+  
+  return gradesWithFeedback.map(g => g.feedback).filter(Boolean) as string[];
+};
+
+export const getCoursesByStudent = (studentId: number): Course[] => {
+  const user = mockUsers.find(u => u.id === studentId);
+  if (!user) return [];
+  return mockCourses.filter(c => user.courses.includes(c.id));
+};
+
+export const getRecentActivityByUser = (userId: number, limit: number = 10): any[] => {
+  // For MVP, return some mock activity data
+  return [
+    { action: 'Submitted Week 8 Course Reflection', timestamp: '2024-11-29T10:30:00Z' },
+    { action: 'Viewed Assignment: JavaScript Fundamentals', timestamp: '2024-11-28T14:15:00Z' },
+    { action: 'Received grade for React Components Project', timestamp: '2024-11-27T09:45:00Z' },
+    { action: 'Completed Database Design Quiz', timestamp: '2024-11-26T16:20:00Z' },
+    { action: 'Started reflection for Web Development Course', timestamp: '2024-11-25T11:00:00Z' }
+  ].slice(0, limit);
+};
