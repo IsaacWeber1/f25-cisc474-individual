@@ -1,4 +1,4 @@
-id,submissionId,score,maxScore,feedback,gradedById,gradedAt,createdAt,updatedAt
-cmfr0jgs0001pk07a6ydvwnsy,cmfr0jgjs001jk07azl6n5kud,23,25,Great recursive implementations! Clean code and excellent understanding of base cases.,cmfr0jb7n0004k07ai1j02p8z,"""2024-09-18T00:00:00.000Z""","""2025-09-19T15:47:20.112Z""","""2025-09-19T15:47:20.112Z"""
-cmfr0jgus001rk07a8aehsp3z,cmfr0jgmj001lk07azy8unxvd,68,75,Good work on component structure. Could improve prop typing and add more detailed documentation.,cmfr0jb7n0004k07ai1j02p8z,"""2024-11-25T00:00:00.000Z""","""2025-09-19T15:47:20.112Z""","""2025-09-19T15:47:20.112Z"""
-cmfr0jgxe001tk07axcntqcga,cmfr0jge2001fk07a9n0ph6i9,85,100,Excellent analysis of sorting algorithms. Good use of Big O notation and clear code examples.,cmfr0jbgd0006k07ag3f7wp77,"""2024-11-22T00:00:00.000Z""","""2025-09-19T15:47:20.112Z""","""2025-09-19T15:47:20.112Z"""
+id,score,maxScore,feedback,gradedAt,createdAt,updatedAt,submissionId,gradedById
+cmfr0jgs0001pk07a6ydvwnsy,23,25,Great recursive implementations! Clean code and excellent understanding of base cases.,2024-09-18 00:00:00,2025-09-19 15:47:20.112,2025-09-19 15:47:20.112,cmfr0jgjs001jk07azl6n5kud,cmfr0jb7n0004k07ai1j02p8z
+cmfr0jgus001rk07a8aehsp3z,68,75,Good work on component structure. Could improve prop typing and add more detailed documentation.,2024-11-25 00:00:00,2025-09-19 15:47:20.112,2025-09-19 15:47:20.112,cmfr0jgmj001lk07azy8unxvd,cmfr0jb7n0004k07ai1j02p8z
+cmfr0jgxe001tk07axcntqcga,85,100,Excellent analysis of sorting algorithms. Good use of Big O notation and clear code examples.,2024-11-22 00:00:00,2025-09-19 15:47:20.112,2025-09-19 15:47:20.112,cmfr0jge2001fk07a9n0ph6i9,cmfr0jbgd0006k07ag3f7wp77

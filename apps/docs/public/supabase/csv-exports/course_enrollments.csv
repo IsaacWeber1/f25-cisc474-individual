@@ -1,11 +1,11 @@
-id,userId,courseId,role,enrolledAt
-cmfr0je9w0009k07a43dizwfm,cmfr0jaxg0001k07ao6mvl0d2,course-cisc474-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jecm000bk07a6k665lij,cmfr0jb4j0003k07a8c42oglz,course-cisc474-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jefe000dk07a171meypu,cmfr0jaq30000k07aol19m3z1,course-cisc474-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jei0000fk07avbf11jty,cmfr0jb7n0004k07ai1j02p8z,course-cisc474-fall24,PROFESSOR,"""2025-09-19T15:47:16.868Z"""
-cmfr0jekp000hk07aqcgxa5l4,cmfr0jbto0007k07acggqqlg0,course-cisc474-fall24,TA,"""2025-09-19T15:47:16.868Z"""
-cmfr0jend000jk07airu2nvq0,cmfr0jaxg0001k07ao6mvl0d2,course-cisc320-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jeq7000lk07au1ngx5hl,cmfr0jbgd0006k07ag3f7wp77,course-cisc320-fall24,PROFESSOR,"""2025-09-19T15:47:16.868Z"""
-cmfr0jet3000nk07a2ohdqqd7,cmfr0jb1b0002k07aihfven0z,course-cisc320-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jevs000pk07a886l6sa4,cmfr0jb4j0003k07a8c42oglz,course-cisc275-fall24,STUDENT,"""2025-09-19T15:47:16.868Z"""
-cmfr0jeyk000rk07ag7leh0d5,cmfr0jbal0005k07ah7sw1zg2,course-cisc275-fall24,PROFESSOR,"""2025-09-19T15:47:16.868Z"""
+id,role,enrolledAt,userId,courseId
+cmfr0je9w0009k07a43dizwfm,STUDENT,2025-09-19 15:47:16.868,cmfr0jaxg0001k07ao6mvl0d2,course-cisc474-fall24
+cmfr0jecm000bk07a6k665lij,STUDENT,2025-09-19 15:47:16.868,cmfr0jb4j0003k07a8c42oglz,course-cisc474-fall24
+cmfr0jefe000dk07a171meypu,STUDENT,2025-09-19 15:47:16.868,cmfr0jaq30000k07aol19m3z1,course-cisc474-fall24
+cmfr0jei0000fk07avbf11jty,PROFESSOR,2025-09-19 15:47:16.868,cmfr0jb7n0004k07ai1j02p8z,course-cisc474-fall24
+cmfr0jekp000hk07aqcgxa5l4,TA,2025-09-19 15:47:16.868,cmfr0jbto0007k07acggqqlg0,course-cisc474-fall24
+cmfr0jend000jk07airu2nvq0,STUDENT,2025-09-19 15:47:16.868,cmfr0jaxg0001k07ao6mvl0d2,course-cisc320-fall24
+cmfr0jeq7000lk07au1ngx5hl,PROFESSOR,2025-09-19 15:47:16.868,cmfr0jbgd0006k07ag3f7wp77,course-cisc320-fall24
+cmfr0jet3000nk07a2ohdqqd7,STUDENT,2025-09-19 15:47:16.868,cmfr0jb1b0002k07aihfven0z,course-cisc320-fall24
+cmfr0jevs000pk07a886l6sa4,STUDENT,2025-09-19 15:47:16.868,cmfr0jb4j0003k07a8c42oglz,course-cisc275-fall24
+cmfr0jeyk000rk07ag7leh0d5,PROFESSOR,2025-09-19 15:47:16.868,cmfr0jbal0005k07ah7sw1zg2,course-cisc275-fall24
