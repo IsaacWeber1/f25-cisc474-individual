@@ -1,0 +1,7 @@
+id,name,category,description,createdAt
+api-integration-3,API Integration,backend,Working with REST APIs,"""2025-09-19T15:47:13.985Z"""
+react-components-1,React Components,frontend,Building reusable UI components,"""2025-09-19T15:47:13.985Z"""
+state-management-2,State Management,frontend,Managing application state,"""2025-09-19T15:47:13.985Z"""
+testing-4,Testing,quality,Writing unit and integration tests,"""2025-09-19T15:47:13.985Z"""
+debugging-5,Debugging,development,Finding and fixing code issues,"""2025-09-19T15:47:13.985Z"""
+time-management-6,Time Management,collaboration,Managing project timelines,"""2025-09-19T15:47:13.985Z"""
