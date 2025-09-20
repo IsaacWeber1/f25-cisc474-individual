@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*", "env:PORT", "env:HOST"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "env:PORT", "env:HOST", "env:NODE_ENV", "env:USE_REAL_DATA"],
       "outputs": [
         "build/**",
         ".vercel/**",
@@ -18,15 +18,18 @@
       "dependsOn": []
     },
     "lint": {
-      "dependsOn": ["^build", "^lint"]
+      "dependsOn": ["^build", "^lint"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "env:NODE_ENV", "env:USE_REAL_DATA"]
     },
     "check-types": {
-      "dependsOn": ["^build", "^check-types"]
+      "dependsOn": ["^build", "^check-types"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "env:NODE_ENV", "env:USE_REAL_DATA"]
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "env:NODE_ENV", "env:USE_REAL_DATA"]
     },
     "db:migrate:dev": {
       "cache": false,
