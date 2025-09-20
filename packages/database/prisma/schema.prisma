@@ -12,9 +12,270 @@ generator client {
   output   = "../generated/client"
 }
 
+enum Role {
+  STUDENT
+  TA
+  PROFESSOR
+  ADMIN
+}
+
+enum AssignmentType {
+  FILE
+  TEXT
+  REFLECTION
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  GRADED
+  LATE
+}
+
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
+  name          String
+  email         String    @unique
   emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  enrollments   CourseEnrollment[]
+  submissions   Submission[]
+  grades        Grade[] @relation("GradedBy")
+  createdCourses Course[] @relation("CreatedBy")
+  createdAssignments Assignment[] @relation("CreatedBy")
+  reflectionResponses ReflectionResponse[]
+  comments      Comment[]
+  gradeChanges  GradeChange[] @relation("ChangedBy")
+  activityLogs  ActivityLog[]
+}
+
+model Course {
+  id            String    @id @default(cuid())
+  code          String    // e.g., "CISC474"
+  title         String    // e.g., "Advanced Web Technologies"
+  description   String?
+  instructor    String    // For now, store as string (could be User relation later)
+  semester      String    // e.g., "Fall 2024"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Foreign Keys
+  createdById   String
+
+  // Relationships
+  createdBy     User @relation("CreatedBy", fields: [createdById], references: [id])
+  enrollments   CourseEnrollment[]
+  assignments   Assignment[]
+
+  @@unique([code, semester])
+}
+
+model CourseEnrollment {
+  id        String   @id @default(cuid())
+  role      Role
+  enrolledAt DateTime @default(now())
+
+  // Foreign Keys
+  userId    String
+  courseId  String
+
+  // Relationships
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model SkillTag {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  description   String?
+  createdAt     DateTime @default(now())
+
+  // Relationships
+  reflectionTemplateSkills ReflectionTemplateSkill[]
+  reflectionResponseSkills ReflectionResponseSkill[]
+}
+
+model Assignment {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  type          AssignmentType
+  maxPoints     Int
+  dueDate       DateTime
+  instructions  Json?          // Array of instruction strings
+  isPublished   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Foreign Keys
+  courseId      String
+  createdById   String
+
+  // Relationships
+  course        Course @relation(fields: [courseId], references: [id])
+  createdBy     User @relation("CreatedBy", fields: [createdById], references: [id])
+  submissions   Submission[]
+  reflectionTemplate ReflectionTemplate?
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  type          AssignmentType
+  status        SubmissionStatus @default(DRAFT)
+  submittedAt   DateTime?
+  content       String?          // For text submissions
+  files         Json?            // Array of file URLs/names
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Foreign Keys
+  assignmentId  String
+  studentId     String
+
+  // Relationships
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  student       User @relation(fields: [studentId], references: [id])
+  grade         Grade?
+  comments      Comment[]
+  reflectionResponse ReflectionResponse?
+
+  @@unique([assignmentId, studentId])
+}
+
+model Grade {
+  id            String   @id @default(cuid())
+  score         Float
+  maxScore      Float
+  feedback      String?
+  gradedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  submissionId  String   @unique
+  gradedById    String
+
+  // Relationships
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  gradedBy      User @relation("GradedBy", fields: [gradedById], references: [id])
+  gradeChanges  GradeChange[]
+}
+
+model GradeChange {
+  id            String   @id @default(cuid())
+  oldScore      Float
+  newScore      Float
+  reason        String
+  changedAt     DateTime @default(now())
+
+  // Foreign Keys
+  gradeId       String
+  changedById   String
+
+  // Relationships
+  grade         Grade @relation(fields: [gradeId], references: [id])
+  changedBy     User @relation("ChangedBy", fields: [changedById], references: [id])
+}
+
+model Comment {
+  id            String   @id @default(cuid())
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  submissionId  String
+  userId        String
+  parentId      String?
+
+  // Relationships
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  user          User @relation(fields: [userId], references: [id])
+  parent        Comment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies       Comment[] @relation("CommentThread")
+}
+
+model ReflectionTemplate {
+  id            String   @id @default(cuid())
+  prompts       Json     // Array of reflection prompt strings
+  dataToShow    Json     // Array of data types to show (recent_grades, peer_benchmark, etc.)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  assignmentId  String   @unique
+
+  // Relationships
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  skillTags     ReflectionTemplateSkill[]
+  responses     ReflectionResponse[]
+}
+
+model ReflectionTemplateSkill {
+  id            String   @id @default(cuid())
+
+  // Foreign Keys
+  templateId    String
+  skillTagId    String
+
+  // Relationships
+  template      ReflectionTemplate @relation(fields: [templateId], references: [id])
+  skillTag      SkillTag @relation(fields: [skillTagId], references: [id])
+
+  @@unique([templateId, skillTagId])
+}
+
+model ReflectionResponse {
+  id            String   @id @default(cuid())
+  answers       Json     // Object with prompt->answer mappings
+  needsHelp     Boolean  @default(false)
+  submittedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  templateId    String
+  studentId     String
+  submissionId  String?  @unique
+
+  // Relationships
+  template      ReflectionTemplate @relation(fields: [templateId], references: [id])
+  student       User @relation(fields: [studentId], references: [id])
+  submission    Submission? @relation(fields: [submissionId], references: [id])
+  selectedSkills ReflectionResponseSkill[]
+}
+
+model ReflectionResponseSkill {
+  id            String   @id @default(cuid())
+
+  // Foreign Keys
+  responseId    String
+  skillTagId    String
+
+  // Relationships
+  response      ReflectionResponse @relation(fields: [responseId], references: [id])
+  skillTag      SkillTag @relation(fields: [skillTagId], references: [id])
+
+  @@unique([responseId, skillTagId])
+}
+
+model ActivityLog {
+  id            String   @id @default(cuid())
+  action        String
+  entityType    String   // 'grade', 'assignment', 'submission', etc.
+  entityId      String
+  details       String
+  timestamp     DateTime @default(now())
+
+  // Foreign Keys
+  userId        String
+
+  // Relationships
+  user          User @relation(fields: [userId], references: [id])
 }

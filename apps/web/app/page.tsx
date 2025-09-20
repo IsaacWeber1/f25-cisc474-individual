@@ -1,10 +1,11 @@
 import Navigation from './_components/Navigation';
 import CourseCard from './_components/CourseCard';
-import { getCurrentUser, getCoursesByUser } from './_lib/mockData';
+import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/dataProvider';
 
-export default function Dashboard() {
-  const currentUser = getCurrentUser();
-  const userCourses = getCoursesByUser(currentUser.id);
+export default async function Dashboard() {
+  const currentUser = await getCurrentUser();
+  const userCourses = await getCoursesByUser(currentUser.id);
+  const dataSource = getDataSourceInfo();
 
   return (
     <>
@@ -26,6 +27,17 @@ export default function Dashboard() {
           <p style={{ color: '#4b5563' }}>
             Here are your courses for this semester.
           </p>
+          <div style={{
+            marginTop: '0.5rem',
+            padding: '0.5rem 1rem',
+            backgroundColor: dataSource.source.includes('Supabase') ? '#dcfce7' : '#fef3c7',
+            border: `1px solid ${dataSource.source.includes('Supabase') ? '#86efac' : '#fcd34d'}`,
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            color: dataSource.source.includes('Supabase') ? '#15803d' : '#92400e'
+          }}>
+            📊 Data Source: {dataSource.source}
+          </div>
         </div>
 
         {userCourses.length > 0 ? (

@@ -1,0 +1,4 @@
+id,code,title,description,instructor,semester,createdById,createdAt,updatedAt
+course-cisc474-fall24,CISC474,Advanced Web Technologies,"Learn modern web development with React, Next.js, and more.",Dr. Bart,Fall 2024,cmfr0jb7n0004k07ai1j02p8z,"""2025-09-19T15:47:16.197Z""","""2025-09-19T15:47:16.197Z"""
+course-cisc320-fall24,CISC320,Introduction to Algorithms,Fundamental algorithms and data structures.,Dr. Smith,Fall 2024,cmfr0jbgd0006k07ag3f7wp77,"""2025-09-19T15:47:16.197Z""","""2025-09-19T15:47:16.197Z"""
+course-cisc275-fall24,CISC275,Introduction to Software Engineering,Software development lifecycle and best practices.,Dr. Johnson,Fall 2024,cmfr0jbal0005k07ah7sw1zg2,"""2025-09-19T15:47:16.197Z""","""2025-09-19T15:47:16.197Z"""

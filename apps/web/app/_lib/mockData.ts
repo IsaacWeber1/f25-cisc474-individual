@@ -112,6 +112,11 @@ export interface SkillTag {
   description?: string;
 }
 
+export interface Activity {
+  action: string;
+  timestamp: string;
+}
+
 // Mock Users
 export const mockUsers: User[] = [
   {
@@ -580,7 +585,7 @@ export const getCoursesByStudent = (studentId: number): Course[] => {
   return mockCourses.filter(c => user.courses.includes(c.id));
 };
 
-export const getRecentActivityByUser = (userId: number, limit: number = 10): any[] => {
+export const getRecentActivityByUser = (userId: number, limit: number = 10): Activity[] => {
   // For MVP, return some mock activity data
   return [
     { action: 'Submitted Week 8 Course Reflection', timestamp: '2024-11-29T10:30:00Z' },

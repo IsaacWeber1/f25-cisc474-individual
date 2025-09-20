@@ -19,7 +19,7 @@ export default async function CourseLayout({ children, params }: CourseLayoutPro
         <Navigation />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <h1>Course not found</h1>
-          <p>The course you're looking for doesn't exist.</p>
+          <p>The course you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </>
     );
