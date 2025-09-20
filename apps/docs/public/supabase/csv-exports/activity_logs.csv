@@ -1,4 +1,4 @@
-id,userId,action,entityType,entityId,details,timestamp
-activity-2,cmfr0jaxg0001k07ao6mvl0d2,submission_created,submission,cmfr0jgh5001hk07anc0dnbpr,Submitted reflection for Week 8 Course Reflection,"""2024-11-29T00:00:00.000Z"""
-activity-1,cmfr0jb7n0004k07ai1j02p8z,grade_changed,grade,cmfr0jgus001rk07a8aehsp3z,Changed grade from 65 to 68: Added points for creative implementation approach after review,"""2024-11-26T00:00:00.000Z"""
-activity-3,cmfr0jaxg0001k07ao6mvl0d2,assignment_viewed,assignment,assignment-nextjs-frontend-1,Viewed NextJS Frontend assignment details,"""2024-11-28T00:00:00.000Z"""
+id,action,entityType,entityId,details,timestamp,userId
+activity-2,submission_created,submission,cmfr0jgh5001hk07anc0dnbpr,Submitted reflection for Week 8 Course Reflection,2024-11-29 00:00:00,cmfr0jaxg0001k07ao6mvl0d2
+activity-1,grade_changed,grade,cmfr0jgus001rk07a8aehsp3z,Changed grade from 65 to 68: Added points for creative implementation approach after review,2024-11-26 00:00:00,cmfr0jb7n0004k07ai1j02p8z
+activity-3,assignment_viewed,assignment,assignment-nextjs-frontend-1,Viewed NextJS Frontend assignment details,2024-11-28 00:00:00,cmfr0jaxg0001k07ao6mvl0d2
