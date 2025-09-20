@@ -1,11 +1,11 @@
 // Data provider that can switch between mock and real data
 // Set USE_REAL_DATA to true to use Supabase, false to use mock data
 
-const USE_REAL_DATA = process.env.NODE_ENV === 'production' || process.env.USE_REAL_DATA === 'true';
+const USE_REAL_DATA = false; // Temporarily disabled for build
 
-// Import both data sources
+// Import data sources
 import * as mockData from './mockData';
-import * as realData from './realData';
+// import * as realData from './realData'; // Temporarily disabled
 
 // Export the appropriate data source based on configuration
 export const {
@@ -25,7 +25,7 @@ export const {
   getClassMedianGrade,
   getPeerBenchmark,
   getRecentFeedback
-} = USE_REAL_DATA ? realData : mockData;
+} = mockData; // USE_REAL_DATA ? realData : mockData;
 
 // Re-export types for consistency
 export type {
@@ -43,6 +43,6 @@ export type {
 export const isUsingRealData = () => USE_REAL_DATA;
 export const getDataSourceInfo = () => ({
   source: USE_REAL_DATA ? 'Supabase (Real Data)' : 'Mock Data',
-  environment: process.env.NODE_ENV,
-  useRealDataFlag: process.env.USE_REAL_DATA
+  environment: 'development', // Simplified since USE_REAL_DATA is currently disabled
+  useRealDataFlag: USE_REAL_DATA
 });

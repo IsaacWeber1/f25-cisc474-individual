@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { 
-  getCourseById, 
-  getCurrentUser, 
+import {
+  getCourseById,
+  getCurrentUser,
   getUserRole,
   getReflectionsByUser,
   getReflectionTemplatesByUser,
   getSubmissionByStudent,
-  getGradeBySubmission
+  getGradeBySubmission,
+  type Assignment
 } from '../../../_lib/mockData';
 
 interface ReflectionsListProps {
@@ -50,7 +51,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
     });
   }
 
-  const getReflectionStatus = (reflection: any) => {
+  const getReflectionStatus = (reflection: Assignment) => {
     const submission = getSubmissionByStudent(reflection.id, currentUser.id);
     const grade = submission ? getGradeBySubmission(submission.id) : null;
     if (submission && grade) {
