@@ -7,7 +7,7 @@ import {
   getReflectionsByUser,
   getRecentGrades,
   getClassMedianGrade
-} from '../../_lib/mockData';
+} from '../../_lib/dataProvider';
 
 interface CourseOverviewProps {
   params: Promise<{ id: string }>;
@@ -15,36 +15,43 @@ interface CourseOverviewProps {
 
 export default async function CourseOverview({ params }: CourseOverviewProps) {
   const resolvedParams = await params;
-  const courseId = parseInt(resolvedParams.id);
-  const course = getCourseById(courseId);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
-  const assignments = getAssignmentsByCourse(courseId);
-  const reflections = getReflectionsByUser(currentUser.id, courseId);
-  const recentGrades = getRecentGrades(currentUser.id, 3);
-  const classMedian = getClassMedianGrade(courseId);
+  const courseId = resolvedParams.id; // Keep as string
 
-  if (!course) {
+  try {
+    const course = await getCourseById(courseId);
+    const currentUser = await getCurrentUser();
+
+    if (!course || !currentUser) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1>Course not found</h1>
+        </div>
+      );
+    }
+
+    const userRole = await getUserRole(currentUser.id, courseId);
+    const assignments = await getAssignmentsByCourse(courseId);
+    const reflections = await getReflectionsByUser(currentUser.id);
+    const recentGrades = await getRecentGrades(currentUser.id, 3);
+    const classMedian = await getClassMedianGrade(courseId) || 0;
+
+    // Ensure assignments is an array before sorting
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+
+    // Get recent assignments (last 3)
+    const recentAssignments = assignmentsArray
+      .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
+      .slice(0, 3);
+
+    // Calculate course stats
+    const totalAssignments = assignmentsArray.length;
+    const reflectionCount = Array.isArray(reflections) ? reflections.length : 0;
+    const recentGradesArray = Array.isArray(recentGrades) ? recentGrades : [];
+    const averageGrade = recentGradesArray.length > 0
+      ? recentGradesArray.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGradesArray.length
+      : 0;
+
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Course not found</h1>
-      </div>
-    );
-  }
-
-  // Get recent assignments (last 3)
-  const recentAssignments = assignments
-    .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
-    .slice(0, 3);
-
-  // Calculate course stats
-  const totalAssignments = assignments.length;
-  const reflectionCount = reflections.length;
-  const averageGrade = recentGrades.length > 0 
-    ? recentGrades.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGrades.length
-    : 0;
-
-  return (
     <div>
       {/* Course Description */}
       <div style={{ marginBottom: '2rem' }}>
@@ -116,7 +123,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
           </div>
         </div>
 
-        {userRole === 'student' && (
+        {userRole === 'STUDENT' && (
           <>
             <div style={{
               backgroundColor: '#fef3c7',
@@ -228,8 +235,8 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                     </Link>
                     <span style={{
                       fontSize: '0.75rem',
-                      backgroundColor: assignment.type === 'reflection' ? '#dcfce7' : '#dbeafe',
-                      color: assignment.type === 'reflection' ? '#15803d' : '#1e40af',
+                      backgroundColor: assignment.type === 'REFLECTION' ? '#dcfce7' : '#dbeafe',
+                      color: assignment.type === 'REFLECTION' ? '#15803d' : '#1e40af',
                       padding: '0.25rem 0.5rem',
                       borderRadius: '0.25rem',
                       textTransform: 'capitalize'
@@ -273,12 +280,12 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
             color: '#111827',
             marginBottom: '1rem'
           }}>
-            {userRole === 'student' ? 'Recent Activity' : 'Course Activity'}
+            {userRole === 'STUDENT' ? 'Recent Activity' : 'Course Activity'}
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {userRole === 'student' && recentGrades.length > 0 ? (
-              recentGrades.map((grade, index) => (
+            {userRole === 'STUDENT' && recentGradesArray.length > 0 ? (
+              recentGradesArray.map((grade, index) => (
                 <div key={grade.id} style={{
                   padding: '1rem',
                   backgroundColor: '#f8fafc',
@@ -326,7 +333,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 padding: '2rem',
                 color: '#6b7280'
               }}>
-                {userRole === 'student' ? (
+                {userRole === 'STUDENT' ? (
                   <p>No recent grades to display.</p>
                 ) : (
                   <p>Course activity will appear here.</p>
@@ -371,7 +378,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
           View Reflections
         </Link>
         
-        {userRole === 'student' && (
+        {userRole === 'STUDENT' && (
           <Link 
             href={`/course/${resolvedParams.id}/grades`}
             style={{
@@ -388,5 +395,16 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[Course Page] Error loading course data:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Course</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the course data. Please try again later.
+        </p>
+      </div>
+    );
+  }
 }

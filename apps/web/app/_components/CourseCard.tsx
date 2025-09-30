@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Course } from '../_lib/mockData';
+import { Course } from '../_lib/dataProvider';
 import { useState } from 'react';
 
 interface CourseCardProps {

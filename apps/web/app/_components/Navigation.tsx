@@ -2,11 +2,29 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { getCurrentUser } from '../_lib/mockData';
+import { useEffect, useState } from 'react';
+import { getCurrentUser, User } from '../_lib/dataProvider';
+import UserSwitcher from './UserSwitcher';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const currentUser = getCurrentUser();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('Failed to load current user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -75,18 +93,13 @@ export default function Navigation() {
           alignItems: 'center',
           gap: '1rem'
         }}>
-          <span style={{ fontSize: '0.875rem' }}>
-            Welcome, <span style={{ fontWeight: 600 }}>{currentUser.name}</span>
-          </span>
-          <span style={{
-            fontSize: '0.75rem',
-            backgroundColor: '#1d4ed8',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '0.25rem',
-            textTransform: 'capitalize'
-          }}>
-            {currentUser.role}
-          </span>
+          {loading ? (
+            <span style={{ fontSize: '0.875rem' }}>Loading...</span>
+          ) : currentUser ? (
+            <UserSwitcher currentUser={currentUser} />
+          ) : (
+            <span style={{ fontSize: '0.875rem' }}>Not logged in</span>
+          )}
         </div>
       </div>
     </nav>

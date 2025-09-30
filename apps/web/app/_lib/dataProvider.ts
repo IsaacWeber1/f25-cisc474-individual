@@ -1,31 +1,41 @@
-// Data provider that can switch between mock and real data
-// Set USE_REAL_DATA to true to use Supabase, false to use mock data
+// Direct API integration - no more mock data!
+// All functions now connect directly to our NestJS backend
 
-const USE_REAL_DATA = false; // Temporarily disabled for build
-
-// Import data sources
-import * as mockData from './mockData';
-// import * as realData from './realData'; // Temporarily disabled
-
-// Export the appropriate data source based on configuration
-export const {
+export {
   getCurrentUser,
-  getCoursesByUser,
+  getAllUsers,
+  getUserById,
+  getAllCourses,
   getCourseById,
-  getAssignmentsByCourse,
-  getGradesByStudent,
+  getCoursesByUser,
+  getCoursesByStudent,
+  getAllAssignments,
   getAssignmentById,
-  getUserRole,
-  getEnrollmentsByUser,
+  getAssignmentsByCourse,
+  getAllSubmissions,
+  getSubmissionById,
   getSubmissionsByAssignment,
   getSubmissionByStudent,
+  getAllGrades,
+  getGradeById,
+  getGradesByStudent,
   getGradeBySubmission,
+  createSubmission,
+  updateSubmission,
+  createGrade,
+  updateGrade,
+  getUserRole,
+  getEnrollmentsByUser,
   getReflectionsByUser,
+  getReflectionTemplatesByUser,
+  getReflectionTemplatesByAssignment,
   getRecentGrades,
   getClassMedianGrade,
   getPeerBenchmark,
-  getRecentFeedback
-} = mockData; // USE_REAL_DATA ? realData : mockData;
+  getRecentFeedback,
+  getRecentActivityByUser,
+  getSkillTagsByCategory
+} from './apiClient';
 
 // Re-export types for consistency
 export type {
@@ -37,12 +47,12 @@ export type {
   Submission,
   Grade,
   Enrollment
-} from './mockData';
+} from './apiClient';
 
-// Helper to check which data source is being used
-export const isUsingRealData = () => USE_REAL_DATA;
+// Helper to indicate we're always using real data now
+export const isUsingRealData = () => true;
 export const getDataSourceInfo = () => ({
-  source: USE_REAL_DATA ? 'Supabase (Real Data)' : 'Mock Data',
-  environment: 'development', // Simplified since USE_REAL_DATA is currently disabled
-  useRealDataFlag: USE_REAL_DATA
+  source: 'NestJS API (Real Data)',
+  environment: process.env.NODE_ENV || 'development',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 });

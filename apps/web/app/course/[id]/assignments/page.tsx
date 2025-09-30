@@ -6,7 +6,7 @@ import {
   getUserRole,
   getSubmissionByStudent,
   getGradeBySubmission 
-} from '../../../_lib/mockData';
+} from '../../../_lib/dataProvider';
 
 interface AssignmentsListProps {
   params: Promise<{ id: string }>;
@@ -14,58 +14,83 @@ interface AssignmentsListProps {
 }
 
 export default async function AssignmentsList({ params, searchParams }: AssignmentsListProps) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const courseId = parseInt(resolvedParams.id);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
-  let assignments = getAssignmentsByCourse(courseId);
+  try {
+    const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
+    const courseId = resolvedParams.id; // Keep as string
+    const currentUser = await getCurrentUser();
 
-  // Filter by type if specified
-  if (resolvedSearchParams.type && resolvedSearchParams.type !== 'all') {
-    assignments = assignments.filter(assignment => assignment.type === resolvedSearchParams.type);
-  }
+    if (!currentUser) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1>Error Loading Assignments</h1>
+          <p>Unable to load user data.</p>
+        </div>
+      );
+    }
 
-  // Filter by status for students
-  if (userRole === 'student' && resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
-    assignments = assignments.filter(assignment => {
-      const submission = getSubmissionByStudent(assignment.id, currentUser.id);
-      const grade = submission ? getGradeBySubmission(submission.id) : null;
-      
-      switch (resolvedSearchParams.status) {
-        case 'pending':
-          return !submission;
-        case 'submitted':
-          return submission && !grade;
-        case 'graded':
-          return submission && grade;
-        default:
-          return true;
+    const userRole = await getUserRole(currentUser.id, courseId);
+    let assignments = await getAssignmentsByCourse(courseId);
+
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+
+    // Filter by type if specified
+    if (resolvedSearchParams.type && resolvedSearchParams.type !== 'all') {
+      assignments = assignmentsArray.filter(assignment => assignment.type === resolvedSearchParams.type);
+    } else {
+      assignments = assignmentsArray;
+    }
+
+    // Filter by status for students
+    if (userRole === 'STUDENT' && resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
+      const filteredAssignments = [];
+      for (const assignment of assignments) {
+        const submission = await getSubmissionByStudent(assignment.id, currentUser.id);
+        const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+        let includeAssignment = false;
+        switch (resolvedSearchParams.status) {
+          case 'pending':
+            includeAssignment = !submission;
+            break;
+          case 'submitted':
+            includeAssignment = !!submission && !grade;
+            break;
+          case 'graded':
+            includeAssignment = !!submission && !!grade;
+            break;
+          default:
+            includeAssignment = true;
+        }
+        if (includeAssignment) {
+          filteredAssignments.push(assignment);
+        }
       }
-    });
-  }
+      assignments = filteredAssignments;
+    }
 
-  // Sort assignments by due date (newest first)
-  assignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    // Sort assignments by due date (newest first) - ensure assignments is still an array
+    const sortedAssignments = Array.isArray(assignments) ? assignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()) : [];
 
-  const getAssignmentStatus = (assignmentId: number) => {
-    if (userRole !== 'student') return null;
-    
-    const submission = getSubmissionByStudent(assignmentId, currentUser.id);
-    const grade = submission ? getGradeBySubmission(submission.id) : null;
-    
-    if (!submission) return { status: 'pending', color: '#dc2626', bg: '#fef2f2' };
-    if (!grade) return { status: 'submitted', color: '#d97706', bg: '#fef3c7' };
-    return { status: 'graded', color: '#15803d', bg: '#dcfce7' };
-  };
+    const getAssignmentStatus = async (assignmentId: string) => {
+      if (userRole !== 'STUDENT') return null;
+
+      const submission = await getSubmissionByStudent(assignmentId, currentUser.id);
+      const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+      if (!submission) return { status: 'pending', color: '#dc2626', bg: '#fef2f2' };
+      if (!grade) return { status: 'submitted', color: '#d97706', bg: '#fef3c7' };
+      return { status: 'graded', color: '#15803d', bg: '#dcfce7' };
+    };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'reflection':
+      case 'REFLECTION':
         return { color: '#7c3aed', bg: '#f3e8ff' };
-      case 'file':
+      case 'FILE':
         return { color: '#2563eb', bg: '#dbeafe' };
-      case 'text':
+      case 'TEXT':
         return { color: '#15803d', bg: '#dcfce7' };
       default:
         return { color: '#6b7280', bg: '#f3f4f6' };
@@ -90,12 +115,12 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
             Assignments
           </h1>
           <p style={{ color: '#6b7280' }}>
-            {assignments.length} assignment{assignments.length !== 1 ? 's' : ''} found
+            {sortedAssignments.length} assignment{sortedAssignments.length !== 1 ? 's' : ''} found
           </p>
         </div>
 
         {/* Quick create button for TAs and Professors */}
-        {(userRole === 'ta' || userRole === 'professor') && (
+        {(userRole === 'TA' || userRole === 'PROFESSOR') && (
           <div style={{
             backgroundColor: '#2563eb',
             color: 'white',
@@ -123,9 +148,9 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
         gap: '1.5rem',
         marginTop: '2rem'
       }}>
-        {assignments.length > 0 ? (
-          assignments.map((assignment) => {
-            const statusInfo = getAssignmentStatus(assignment.id);
+        {sortedAssignments.length > 0 ? (
+          await Promise.all(sortedAssignments.map(async (assignment) => {
+            const statusInfo = await getAssignmentStatus(assignment.id);
             const typeColor = getTypeColor(assignment.type);
             const isOverdue = new Date(assignment.dueDate) < new Date() && statusInfo?.status === 'pending';
 
@@ -171,10 +196,12 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                         textTransform: 'capitalize',
                         fontWeight: 500
                       }}>
-                        {assignment.type}
+                        {assignment.type === 'REFLECTION' ? 'Reflection' :
+                         assignment.type === 'FILE' ? 'File' :
+                         assignment.type === 'TEXT' ? 'Text' : assignment.type}
                       </span>
-                      
-                      {assignment.type === 'reflection' && (
+
+                      {assignment.type === 'REFLECTION' && (
                         <span style={{
                           fontSize: '0.75rem',
                           backgroundColor: '#fef3c7',
@@ -244,7 +271,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                     <Link 
                       href={`/course/${resolvedParams.id}/assignments/${assignment.id}`}
                       style={{
-                        backgroundColor: assignment.type === 'reflection' ? '#7c3aed' : '#2563eb',
+                        backgroundColor: assignment.type === 'REFLECTION' ? '#7c3aed' : '#2563eb',
                         color: 'white',
                         padding: '0.5rem 1rem',
                         borderRadius: '0.375rem',
@@ -253,7 +280,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                         fontWeight: 500
                       }}
                     >
-                      {userRole === 'student' ? (
+                      {userRole === 'STUDENT' ? (
                         statusInfo?.status === 'pending' ? 'Start Assignment' :
                         statusInfo?.status === 'submitted' ? 'View Submission' : 'View Results'
                       ) : (
@@ -286,7 +313,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                       fontSize: '0.875rem',
                       color: '#4b5563'
                     }}>
-                      {assignment.instructions.slice(0, 3).map((instruction, index) => (
+                      {assignment.instructions.slice(0, 3).map((instruction: string, index: number) => (
                         <li key={index} style={{
                           marginBottom: '0.25rem',
                           paddingLeft: '1rem',
@@ -316,7 +343,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                 )}
               </div>
             );
-          })
+          }))
         ) : (
           <div style={{
             textAlign: 'center',
@@ -349,5 +376,16 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[Assignments Page] Error loading assignments:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Assignments</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the assignments. Please try again later.
+        </p>
+      </div>
+    );
+  }
 }

@@ -6,20 +6,36 @@ import {
   getRecentGrades,
   getRecentActivityByUser,
   getSkillTagsByCategory 
-} from '../_lib/mockData';
+} from '../_lib/dataProvider';
 
-export default function ProfilePage() {
-  const currentUser = getCurrentUser();
-  const courses = getCoursesByStudent(currentUser.id);
-  const recentGrades = getRecentGrades(currentUser.id, 5);
-  const recentActivity = getRecentActivityByUser(currentUser.id, 10);
-  const skillTags = getSkillTagsByCategory();
+export default async function ProfilePage() {
+  try {
+    const currentUser = await getCurrentUser();
 
-  // Calculate some stats
-  const totalCourses = courses.length;
-  const averageGrade = recentGrades.length > 0 
-    ? recentGrades.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGrades.length
-    : 0;
+    if (!currentUser) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1>User not found</h1>
+        </div>
+      );
+    }
+
+    const courses = await getCoursesByStudent(currentUser.id);
+    const recentGrades = await getRecentGrades(currentUser.id, 5);
+    const recentActivity = await getRecentActivityByUser(currentUser.id);
+    const skillTags = await getSkillTagsByCategory();
+
+    // Ensure arrays are properly handled
+    const coursesArray = Array.isArray(courses) ? courses : [];
+    const recentGradesArray = Array.isArray(recentGrades) ? recentGrades : [];
+    const recentActivityArray = Array.isArray(recentActivity) ? recentActivity : [];
+    const skillTagsArray = Array.isArray(skillTags) ? skillTags : [];
+
+    // Calculate some stats
+    const totalCourses = coursesArray.length;
+    const averageGrade = recentGradesArray.length > 0
+      ? recentGradesArray.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGradesArray.length
+      : 0;
 
   const getGradeColor = (percentage: number) => {
     if (percentage >= 90) return '#15803d';
@@ -116,7 +132,7 @@ export default function ProfilePage() {
               borderRadius: '0.25rem',
               textTransform: 'capitalize'
             }}>
-              {currentUser.role}
+              User
             </span>
           </div>
         </div>
@@ -154,7 +170,7 @@ export default function ProfilePage() {
               fontWeight: 'bold',
               color: 'white'
             }}>
-              {currentUser.name.split(' ').map(n => n[0]).join('')}
+              {currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('') : 'U'}
             </div>
             <div>
               <h1 style={{
@@ -182,7 +198,7 @@ export default function ProfilePage() {
                 textTransform: 'capitalize',
                 fontWeight: 500
               }}>
-                {currentUser.role}
+                User
               </span>
             </div>
           </div>
@@ -254,7 +270,7 @@ export default function ProfilePage() {
                 color: '#7c3aed',
                 marginBottom: '0.25rem'
               }}>
-                {recentActivity.length}
+                {recentActivityArray.length}
               </div>
               <div style={{
                 fontSize: '0.875rem',
@@ -294,7 +310,7 @@ export default function ProfilePage() {
                 display: 'grid',
                 gap: '1rem'
               }}>
-                {courses.map((course) => (
+                {coursesArray.map((course) => (
                   <Link 
                     key={course.id}
                     href={`/course/${course.id}`}
@@ -379,7 +395,7 @@ export default function ProfilePage() {
                 flexDirection: 'column',
                 gap: '1rem'
               }}>
-                {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
+                {recentActivityArray.length > 0 ? recentActivityArray.map((activity, index) => (
                   <div key={index} style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -448,7 +464,7 @@ export default function ProfilePage() {
                 flexDirection: 'column',
                 gap: '0.75rem'
               }}>
-                {recentGrades.slice(0, 5).map((grade, index) => (
+                {recentGradesArray.slice(0, 5).map((grade, index) => (
                   <div key={grade.id} style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -471,7 +487,7 @@ export default function ProfilePage() {
                         fontSize: '0.75rem',
                         color: '#6b7280'
                       }}>
-                        {formatDate(grade.gradedAt)}
+                        {formatDate(grade.gradedAt.toString())}
                       </div>
                     </div>
                     <div style={{
@@ -507,7 +523,7 @@ export default function ProfilePage() {
                 flexWrap: 'wrap',
                 gap: '0.5rem'
               }}>
-                {skillTags.slice(0, 8).map((skill, index) => (
+                {skillTagsArray.slice(0, 8).map((skill, index) => (
                   <span key={skill.id} style={{
                     fontSize: '0.75rem',
                     backgroundColor: '#f3e8ff',
@@ -586,5 +602,16 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[Profile Page] Error loading profile:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Profile</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the profile. Please try again later.
+        </p>
+      </div>
+    );
+  }
 }

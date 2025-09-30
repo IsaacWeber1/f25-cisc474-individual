@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Navigation from '../../_components/Navigation';
-import { getCourseById, getCurrentUser, getUserRole } from '../../_lib/mockData';
+import { getCourseById, getCurrentUser, getUserRole } from '../../_lib/dataProvider';
 
 interface CourseLayoutProps {
   children: React.ReactNode;
@@ -9,28 +9,32 @@ interface CourseLayoutProps {
 
 export default async function CourseLayout({ children, params }: CourseLayoutProps) {
   const resolvedParams = await params;
-  const course = getCourseById(parseInt(resolvedParams.id));
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, parseInt(resolvedParams.id));
+  const courseId = resolvedParams.id; // Keep as string
 
-  if (!course) {
+  try {
+    const course = await getCourseById(courseId);
+    const currentUser = await getCurrentUser();
+
+    if (!course || !currentUser) {
+      return (
+        <>
+          <Navigation />
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <h1>Course not found</h1>
+            <p>The course you&apos;re looking for doesn&apos;t exist.</p>
+          </div>
+        </>
+      );
+    }
+
+    const userRole = await getUserRole(currentUser.id, courseId);
+
+    const isActive = (path: string) => {
+      // This would use usePathname in a real app, but for SSR we'll make it simple
+      return false; // Will be enhanced in client components
+    };
+
     return (
-      <>
-        <Navigation />
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h1>Course not found</h1>
-          <p>The course you&apos;re looking for doesn&apos;t exist.</p>
-        </div>
-      </>
-    );
-  }
-
-  const isActive = (path: string) => {
-    // This would use usePathname in a real app, but for SSR we'll make it simple
-    return false; // Will be enhanced in client components
-  };
-
-  return (
     <>
       <Navigation />
       
@@ -183,6 +187,20 @@ export default async function CourseLayout({ children, params }: CourseLayoutPro
       }}>
         {children}
       </div>
-    </>
-  );
+      </>
+    );
+  } catch (error) {
+    console.error('[Course Layout] Error loading course data:', error);
+    return (
+      <>
+        <Navigation />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h1>Error Loading Course</h1>
+          <p style={{ color: '#6b7280' }}>
+            There was an error loading the course data. Please try again later.
+          </p>
+        </div>
+      </>
+    );
+  }
 }

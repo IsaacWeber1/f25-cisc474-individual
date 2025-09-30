@@ -3,12 +3,12 @@ import {
   getCourseById,
   getCurrentUser,
   getUserRole,
-  getReflectionsByUser,
-  getReflectionTemplatesByUser,
+  getAssignmentsByCourse,
   getSubmissionByStudent,
   getGradeBySubmission,
+  getReflectionTemplatesByUser,
   type Assignment
-} from '../../../_lib/mockData';
+} from '../../../_lib/dataProvider';
 
 interface ReflectionsListProps {
   params: Promise<{ id: string }>;
@@ -18,14 +18,15 @@ interface ReflectionsListProps {
 export default async function ReflectionsList({ params, searchParams }: ReflectionsListProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const courseId = parseInt(resolvedParams.id);
+  const courseId = resolvedParams.id;
   const course = getCourseById(courseId);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
+  const currentUser = await getCurrentUser();
+  const userRole = await getUserRole(currentUser.id, courseId);
   
-  // Get reflections based on role
-  const reflections = getReflectionsByUser(currentUser.id, courseId);
-  const templates = getReflectionTemplatesByUser(currentUser.id, courseId);
+  // Get reflection assignments for this course
+  const allAssignments = await getAssignmentsByCourse(courseId);
+  const reflections = allAssignments.filter(assignment => assignment.type === 'REFLECTION');
+  const templates = await getReflectionTemplatesByUser(currentUser.id);
 
   if (!course) {
     return (
@@ -38,22 +39,29 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
   // Filter reflections by status if specified
   let filteredReflections = reflections;
   if (resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
-    filteredReflections = reflections.filter(reflection => {
-      const submission = getSubmissionByStudent(reflection.id, currentUser.id);
-      const grade = submission ? getGradeBySubmission(submission.id) : null;
-      
-      if (resolvedSearchParams.status === 'completed') {
-        return submission && grade;
-      } else if (resolvedSearchParams.status === 'pending') {
-        return !submission || !grade;
-      }
-      return true;
-    });
+    const filteredResults = await Promise.all(
+      reflections.map(async reflection => {
+        const submission = await getSubmissionByStudent(reflection.id, currentUser.id);
+        const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+        let includeReflection = false;
+        if (resolvedSearchParams.status === 'completed') {
+          includeReflection = !!(submission && grade);
+        } else if (resolvedSearchParams.status === 'pending') {
+          includeReflection = !submission || !grade;
+        } else {
+          includeReflection = true;
+        }
+
+        return includeReflection ? reflection : null;
+      })
+    );
+    filteredReflections = filteredResults.filter(reflection => reflection !== null);
   }
 
-  const getReflectionStatus = (reflection: Assignment) => {
-    const submission = getSubmissionByStudent(reflection.id, currentUser.id);
-    const grade = submission ? getGradeBySubmission(submission.id) : null;
+  const getReflectionStatus = async (reflection: Assignment) => {
+    const submission = await getSubmissionByStudent(reflection.id, currentUser.id);
+    const grade = submission ? await getGradeBySubmission(submission.id) : null;
     if (submission && grade) {
       return { status: 'completed', color: '#15803d', bg: '#dcfce7' };
     }
@@ -144,8 +152,8 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
         gap: '1.5rem'
       }}>
         {filteredReflections.length > 0 ? (
-          filteredReflections.map((reflection) => {
-            const statusInfo = getReflectionStatus(reflection);
+          await Promise.all(filteredReflections.map(async (reflection) => {
+            const statusInfo = await getReflectionStatus(reflection);
             const template = templates.find(t => t.assignmentId === reflection.id);
 
             return (
@@ -177,7 +185,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                       }}>
                         {reflection.title}
                       </h3>
-                      
+
                       <span style={{
                         fontSize: '0.75rem',
                         backgroundColor: '#f3e8ff',
@@ -230,7 +238,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                       {statusInfo.status}
                     </span>
 
-                    <Link 
+                    <Link
                       href={`/course/${resolvedParams.id}/reflections/${reflection.id}`}
                       style={{
                         backgroundColor: '#7c3aed',
@@ -274,7 +282,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                       fontSize: '0.875rem',
                       color: '#4b5563'
                     }}>
-                      {template.prompts.slice(0, 2).map((prompt, index) => (
+                      {template.prompts.slice(0, 2).map((prompt: string, index: number) => (
                         <li key={index} style={{
                           marginBottom: '0.25rem',
                           paddingLeft: '1rem',
@@ -304,7 +312,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                 )}
               </div>
             );
-          })
+          }))
         ) : (
           <div style={{
             textAlign: 'center',
