@@ -2,6 +2,9 @@ import Navigation from './_components/Navigation';
 import CourseCard from './_components/CourseCard';
 import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/dataProvider';
 
+// Force dynamic rendering to handle cookies properly
+export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   const currentUser = await getCurrentUser();
   const userCourses = await getCoursesByUser(currentUser.id);
