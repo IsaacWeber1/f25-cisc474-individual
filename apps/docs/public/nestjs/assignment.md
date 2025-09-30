@@ -3,24 +3,24 @@
 ## Deployed API Endpoints
 
 ### Users
-- **GET All Users**: [https://render-deployment-url/users](https://render-deployment-url/users)
-- **GET User by ID**: [https://render-deployment-url/users/{id}](https://render-deployment-url/users/{id})
+- **GET All Users**: [https://f25-cisc474-individual-n1wv.onrender.com/users](https://f25-cisc474-individual-n1wv.onrender.com/users)
+- **GET User by ID**: [https://f25-cisc474-individual-n1wv.onrender.com/users/{id}](https://f25-cisc474-individual-n1wv.onrender.com/users/{id})
 
 ### Courses
-- **GET All Courses**: [https://render-deployment-url/courses](https://render-deployment-url/courses)
-- **GET Course by ID**: [https://render-deployment-url/courses/{id}](https://render-deployment-url/courses/{id})
+- **GET All Courses**: [https://f25-cisc474-individual-n1wv.onrender.com/courses](https://f25-cisc474-individual-n1wv.onrender.com/courses)
+- **GET Course by ID**: [https://f25-cisc474-individual-n1wv.onrender.com/courses/{id}](https://f25-cisc474-individual-n1wv.onrender.com/courses/{id})
 
 ### Assignments
-- **GET All Assignments**: [https://render-deployment-url/assignments](https://render-deployment-url/assignments)
-- **GET Assignment by ID**: [https://render-deployment-url/assignments/{id}](https://render-deployment-url/assignments/{id})
+- **GET All Assignments**: [https://f25-cisc474-individual-n1wv.onrender.com/assignments](https://f25-cisc474-individual-n1wv.onrender.com/assignments)
+- **GET Assignment by ID**: [https://f25-cisc474-individual-n1wv.onrender.com/assignments/{id}](https://f25-cisc474-individual-n1wv.onrender.com/assignments/{id})
 
 ### Submissions
-- **GET All Submissions**: [https://render-deployment-url/submissions](https://render-deployment-url/submissions)
-- **GET Submission by ID**: [https://render-deployment-url/submissions/{id}](https://render-deployment-url/submissions/{id})
+- **GET All Submissions**: [https://f25-cisc474-individual-n1wv.onrender.com/submissions](https://f25-cisc474-individual-n1wv.onrender.com/submissions)
+- **GET Submission by ID**: [https://f25-cisc474-individual-n1wv.onrender.com/submissions/{id}](https://f25-cisc474-individual-n1wv.onrender.com/submissions/{id})
 
 ### Grades
-- **GET All Grades**: [https://render-deployment-url/grades](https://render-deployment-url/grades)
-- **GET Grade by ID**: [https://render-deployment-url/grades/{id}](https://render-deployment-url/grades/{id})
+- **GET All Grades**: [https://f25-cisc474-individual-n1wv.onrender.com/grades](https://f25-cisc474-individual-n1wv.onrender.com/grades)
+- **GET Grade by ID**: [https://f25-cisc474-individual-n1wv.onrender.com/grades/{id}](https://f25-cisc474-individual-n1wv.onrender.com/grades/{id})
 
 ## Implementation Details
 
