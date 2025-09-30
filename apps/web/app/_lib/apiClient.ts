@@ -11,6 +11,8 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
       headers: {
         'Content-Type': 'application/json',
       },
+      // Add timeout and handle connection errors better on Vercel
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     });
 
     if (!response.ok) {
@@ -24,6 +26,8 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
   } catch (error) {
     if (error instanceof SyntaxError && error.message.includes('JSON')) {
       console.error(`[apiClient] JSON parse error for ${url}:`, error);
+    } else if (error instanceof Error && error.name === 'AbortError') {
+      console.error(`[apiClient] Request timeout for ${url}`);
     } else {
       console.error(`[apiClient] Request failed for ${url}:`, error);
     }
