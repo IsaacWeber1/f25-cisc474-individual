@@ -1,13 +1,14 @@
 import Link from 'next/link';
-import { 
-  getAssignmentById, 
-  getCurrentUser, 
+import SubmissionInterface from '../../../../_components/SubmissionInterface';
+import {
+  getAssignmentById,
+  getCurrentUser,
   getUserRole,
   getCourseById,
   getSubmissionByStudent,
   getGradeBySubmission,
   getReflectionTemplatesByAssignment
-} from '../../../../_lib/mockData';
+} from '../../../../_lib/dataProvider';
 
 interface AssignmentDetailProps {
   params: Promise<{ id: string; assignmentId: string }>;
@@ -15,14 +16,15 @@ interface AssignmentDetailProps {
 
 export default async function AssignmentDetail({ params }: AssignmentDetailProps) {
   const resolvedParams = await params;
-  const courseId = parseInt(resolvedParams.id);
-  const assignmentId = parseInt(resolvedParams.assignmentId);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
-  const course = getCourseById(courseId);
-  const assignment = getAssignmentById(assignmentId);
+  try {
+    const courseId = resolvedParams.id; // Keep as string
+    const assignmentId = resolvedParams.assignmentId; // Keep as string
+    const currentUser = await getCurrentUser();
+    const userRole = await getUserRole(currentUser.id, courseId);
+    const course = await getCourseById(courseId);
+    const assignment = await getAssignmentById(assignmentId);
   
-  if (!course || !assignment) {
+    if (!course || !assignment || !currentUser) {
     return (
       <div style={{ textAlign: 'center', padding: '2rem' }}>
         <h1>Assignment not found</h1>
@@ -40,12 +42,12 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
     );
   }
 
-  const submission = userRole === 'student' ? getSubmissionByStudent(assignmentId, currentUser.id) : null;
-  const grade = submission ? getGradeBySubmission(submission.id) : null;
+    const submission = userRole === 'STUDENT' ? await getSubmissionByStudent(assignmentId, currentUser.id) : null;
+    const grade = submission ? await getGradeBySubmission(submission.id) : null;
   const isOverdue = new Date(assignment.dueDate) < new Date() && !submission;
   
   const getStatusColor = () => {
-    if (userRole !== 'student') return null;
+    if (userRole !== 'STUDENT') return null;
     if (!submission) return { status: 'Not Started', color: '#dc2626', bg: '#fef2f2' };
     if (!grade) return { status: 'Submitted', color: '#d97706', bg: '#fef3c7' };
     return { status: 'Graded', color: '#15803d', bg: '#dcfce7' };
@@ -55,11 +57,11 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'reflection':
+      case 'REFLECTION':
         return { color: '#7c3aed', bg: '#f3e8ff' };
-      case 'file':
+      case 'FILE':
         return { color: '#2563eb', bg: '#dbeafe' };
-      case 'text':
+      case 'TEXT':
         return { color: '#15803d', bg: '#dcfce7' };
       default:
         return { color: '#6b7280', bg: '#f3f4f6' };
@@ -122,7 +124,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
               {assignment.type}
             </span>
             
-            {assignment.type === 'reflection' && (
+            {assignment.type === 'REFLECTION' && (
               <span style={{
                 fontSize: '0.875rem',
                 backgroundColor: '#fef3c7',
@@ -275,7 +277,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
             color: '#374151',
             lineHeight: 1.6
           }}>
-            {assignment.instructions.map((instruction, index) => (
+            {assignment.instructions.map((instruction: string, index: number) => (
               <li key={index} style={{
                 marginBottom: '1rem',
                 paddingLeft: '2rem',
@@ -300,7 +302,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
       {/* Submission Interface */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: userRole === 'student' ? '2fr 1fr' : '1fr',
+        gridTemplateColumns: userRole === 'STUDENT' ? '2fr 1fr' : '1fr',
         gap: '2rem',
         marginBottom: '2rem'
       }}>
@@ -317,198 +319,16 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
             color: '#111827',
             marginBottom: '1.5rem'
           }}>
-            {userRole === 'student' ? 'Your Submission' : 'Assignment Details'}
+            {userRole === 'STUDENT' ? 'Your Submission' : 'Assignment Details'}
           </h2>
 
-          {userRole === 'student' ? (
-            <>
-              {/* Student Submission Interface */}
-              {assignment.type === 'text' && (
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Text Submission:
-                  </label>
-                  <textarea 
-                    style={{
-                      width: '100%',
-                      minHeight: '200px',
-                      padding: '0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
-                      fontFamily: 'inherit'
-                    }}
-                    placeholder={submission ? 'Your submitted text...' : 'Enter your text submission here...'}
-                    defaultValue={submission?.content || ''}
-                    disabled={!!grade}
-                  />
-                  {!grade && (
-                    <div style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      marginTop: '1rem'
-                    }}>
-                      <button style={{
-                        backgroundColor: '#15803d',
-                        color: 'white',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        fontWeight: 500,
-                        cursor: 'pointer'
-                      }}>
-                        {submission ? 'Update Submission' : 'Submit'}
-                      </button>
-                      <button style={{
-                        backgroundColor: '#6b7280',
-                        color: 'white',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        fontWeight: 500,
-                        cursor: 'pointer'
-                      }}>
-                        Save Draft
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {assignment.type === 'file' && (
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem'
-                  }}>
-                    File Upload:
-                  </label>
-                  <div style={{
-                    border: '2px dashed #d1d5db',
-                    borderRadius: '0.5rem',
-                    padding: '3rem 2rem',
-                    textAlign: 'center',
-                    backgroundColor: '#f9fafb'
-                  }}>
-                    {submission ? (
-                      <div>
-                        <div style={{
-                          fontSize: '2rem',
-                          marginBottom: '1rem'
-                        }}>📁</div>
-                        <p style={{
-                          fontWeight: 500,
-                          color: '#374151',
-                          marginBottom: '0.5rem'
-                        }}>
-                          File submitted: {submission.files?.[0] || 'file.pdf'}
-                        </p>
-                        <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                          Submitted on {new Date(submission.submittedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <div style={{
-                          fontSize: '2rem',
-                          marginBottom: '1rem'
-                        }}>📤</div>
-                        <p style={{
-                          fontWeight: 500,
-                          color: '#374151',
-                          marginBottom: '0.5rem'
-                        }}>
-                          Drop files here or click to browse
-                        </p>
-                        <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                          Supports PDF, DOC, DOCX, TXT files up to 10MB
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  {!grade && (
-                    <div style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      marginTop: '1rem'
-                    }}>
-                      <button style={{
-                        backgroundColor: '#15803d',
-                        color: 'white',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        fontWeight: 500,
-                        cursor: 'pointer'
-                      }}>
-                        {submission ? 'Replace File' : 'Upload & Submit'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {assignment.type === 'reflection' && (
-                <div>
-                  <div style={{
-                    backgroundColor: '#f3e8ff',
-                    border: '1px solid #c4b5fd',
-                    borderRadius: '0.5rem',
-                    padding: '1rem',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <span style={{ fontSize: '1.5rem' }}>✨</span>
-                      <h3 style={{
-                        fontSize: '1.125rem',
-                        fontWeight: 600,
-                        color: '#7c3aed',
-                        margin: 0
-                      }}>
-                        Guided Reflection
-                      </h3>
-                    </div>
-                    <p style={{
-                      color: '#6d28d9',
-                      fontSize: '0.875rem',
-                      margin: 0
-                    }}>
-                      This reflection helps you think about your learning progress with personalized prompts and insights.
-                    </p>
-                  </div>
-
-                  <Link 
-                    href={`/course/${resolvedParams.id}/reflections/${assignmentId}`}
-                    style={{
-                      display: 'inline-block',
-                      backgroundColor: '#7c3aed',
-                      color: 'white',
-                      padding: '1rem 2rem',
-                      borderRadius: '0.5rem',
-                      textDecoration: 'none',
-                      fontWeight: 500,
-                      fontSize: '1rem'
-                    }}
-                  >
-                    {submission ? 'View Reflection' : 'Start Reflection'} →
-                  </Link>
-                </div>
-              )}
-            </>
+          {userRole === 'STUDENT' ? (
+            <SubmissionInterface
+              assignment={assignment}
+              submission={submission}
+              grade={grade}
+              courseId={courseId}
+            />
           ) : (
             /* Instructor View */
             <div>
@@ -519,7 +339,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
               }}>
                 Assignment created for {assignment.type} submission. Students can access this assignment through their assignments list.
               </p>
-              
+
               <div style={{
                 display: 'flex',
                 gap: '1rem'
@@ -535,24 +355,27 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
                 }}>
                   Edit Assignment
                 </button>
-                <button style={{
-                  backgroundColor: '#15803d',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  fontWeight: 500,
-                  cursor: 'pointer'
-                }}>
+                <Link
+                  href={`/course/${courseId}/assignments/${assignmentId}/submissions`}
+                  style={{
+                    backgroundColor: '#15803d',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '0.375rem',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                    display: 'inline-block'
+                  }}
+                >
                   View Submissions
-                </button>
+                </Link>
               </div>
             </div>
           )}
         </div>
 
         {/* Sidebar - Student Only */}
-        {userRole === 'student' && (
+        {userRole === 'STUDENT' && (
           <div>
             {/* Grade Display */}
             {grade && (
@@ -681,7 +504,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
                       Submitted:
                     </span>
                     <span style={{ fontSize: '0.875rem', color: '#374151' }}>
-                      {new Date(submission.submittedAt).toLocaleDateString()}
+                      {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'Not submitted'}
                     </span>
                   </div>
                 )}
@@ -708,5 +531,26 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[Assignment Detail] Error loading assignment:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Assignment</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the assignment. Please try again later.
+        </p>
+        <Link
+          href={`/course/${resolvedParams.id}/assignments`}
+          style={{
+            color: '#2563eb',
+            textDecoration: 'none',
+            fontWeight: 500
+          }}
+        >
+          ← Back to Assignments
+        </Link>
+      </div>
+    );
+  }
 }

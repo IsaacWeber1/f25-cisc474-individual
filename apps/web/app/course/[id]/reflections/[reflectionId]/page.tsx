@@ -10,7 +10,7 @@ import {
   getRecentGrades,
   getPeerBenchmark,
   getRecentFeedback
-} from '../../../../_lib/mockData';
+} from '../../../../_lib/dataProvider';
 
 interface ReflectionDetailProps {
   params: Promise<{ id: string; reflectionId: string }>;
@@ -18,14 +18,15 @@ interface ReflectionDetailProps {
 
 export default async function ReflectionDetail({ params }: ReflectionDetailProps) {
   const resolvedParams = await params;
-  const courseId = parseInt(resolvedParams.id);
-  const assignmentId = parseInt(resolvedParams.reflectionId);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
-  const course = getCourseById(courseId);
-  const assignment = getAssignmentById(assignmentId);
+  try {
+    const courseId = resolvedParams.id; // Keep as string
+    const assignmentId = resolvedParams.reflectionId; // Keep as string
+    const currentUser = await getCurrentUser();
+    const userRole = await getUserRole(currentUser.id, courseId);
+    const course = await getCourseById(courseId);
+    const assignment = await getAssignmentById(assignmentId);
   
-  if (!course || !assignment || assignment.type !== 'reflection') {
+  if (!course || !assignment || assignment.type !== 'REFLECTION') {
     return (
       <div style={{ textAlign: 'center', padding: '2rem' }}>
         <h1>Reflection not found</h1>
@@ -43,18 +44,18 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
     );
   }
 
-  const submission = userRole === 'student' ? getSubmissionByStudent(assignmentId, currentUser.id) : null;
-  const grade = submission ? getGradeBySubmission(submission.id) : null;
-  const templates = getReflectionTemplatesByAssignment(assignmentId);
+  const submission = userRole === 'STUDENT' ? await getSubmissionByStudent(assignmentId, currentUser.id) : null;
+  const grade = submission ? await getGradeBySubmission(submission.id) : null;
+  const templates = await getReflectionTemplatesByAssignment(assignmentId);
   const template = templates.length > 0 ? templates[0] : null;
-  
+
   // Get data for the reflection based on template requirements
-  const recentGrades = getRecentGrades(currentUser.id, 5);
-  const peerBenchmark = getPeerBenchmark(courseId);
-  const recentFeedback = getRecentFeedback(currentUser.id, 3);
+  const recentGrades = await getRecentGrades(currentUser.id, 5);
+  const peerBenchmark = await getPeerBenchmark(currentUser.id, courseId);
+  const recentFeedback = await getRecentFeedback(currentUser.id, 3);
 
   const getStatusColor = () => {
-    if (userRole !== 'student') return null;
+    if (userRole !== 'STUDENT') return null;
     if (!submission) return { status: 'Not Started', color: '#dc2626', bg: '#fef2f2' };
     if (!grade) return { status: 'Submitted', color: '#d97706', bg: '#fef3c7' };
     return { status: 'Completed', color: '#15803d', bg: '#dcfce7' };
@@ -144,7 +145,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
         </p>
       </div>
 
-      {userRole === 'student' && !grade ? (
+      {userRole === 'STUDENT' && !grade ? (
         /* Student Reflection Interface */
         <div style={{
           display: 'grid',
@@ -168,7 +169,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 Reflection Prompts
               </h2>
 
-              {template?.prompts && template.prompts.map((prompt, index) => (
+              {template?.prompts && template.prompts.map((prompt: string, index: number) => (
                 <div key={index} style={{
                   marginBottom: '2rem',
                   padding: '1.5rem',
@@ -197,13 +198,13 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                       backgroundColor: 'white'
                     }}
                     placeholder="Share your thoughts here..."
-                    defaultValue={submission?.reflectionResponse?.answers?.[index.toString()] || ''}
+                    defaultValue={(submission as unknown as { reflectionResponse?: { answers?: Record<string, string> } })?.reflectionResponse?.answers?.[index.toString()] || ''}
                   />
                 </div>
               ))}
 
               {/* Skill Tags Selection */}
-              {template?.skillTags && (
+              {(template as unknown as { skillTags?: string[] })?.skillTags && (
                 <div style={{
                   marginBottom: '2rem',
                   padding: '1.5rem',
@@ -225,7 +226,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                     flexWrap: 'wrap',
                     gap: '0.75rem'
                   }}>
-                    {template.skillTags.map((skill, index) => (
+                    {(template as unknown as { skillTags?: string[] })?.skillTags?.map((skill: string, index: number) => (
                       <label key={index} style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -503,7 +504,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
             </div>
           </div>
 
-          {submission?.reflectionResponse?.answers && template?.prompts && template.prompts.map((prompt, index) => (
+          {(submission as unknown as { reflectionResponse?: { answers?: Record<string, string> } })?.reflectionResponse?.answers && template?.prompts && template.prompts.map((prompt: string, index: number) => (
             <div key={index} style={{
               marginBottom: '2rem',
               padding: '1.5rem',
@@ -525,7 +526,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 lineHeight: 1.6,
                 whiteSpace: 'pre-wrap'
               }}>
-                {submission.reflectionResponse?.answers?.[index.toString()] || 'No response provided.'}
+                {(submission as unknown as { reflectionResponse?: { answers?: Record<string, string> } })?.reflectionResponse?.answers?.[index.toString()] || 'No response provided.'}
               </div>
             </div>
           ))}
@@ -647,7 +648,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 color: '#4b5563',
                 lineHeight: 1.6
               }}>
-                {template.prompts.map((prompt, index) => (
+                {template.prompts.map((prompt: string, index: number) => (
                   <li key={index} style={{ marginBottom: '0.75rem' }}>
                     {prompt}
                   </li>
@@ -688,4 +689,25 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
       )}
     </div>
   );
+  } catch (error) {
+    console.error('[Reflection Detail] Error loading reflection:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Reflection</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the reflection. Please try again later.
+        </p>
+        <Link
+          href={`/course/${resolvedParams.id}/reflections`}
+          style={{
+            color: '#2563eb',
+            textDecoration: 'none',
+            fontWeight: 500
+          }}
+        >
+          ← Back to Reflections
+        </Link>
+      </div>
+    );
+  }
 }

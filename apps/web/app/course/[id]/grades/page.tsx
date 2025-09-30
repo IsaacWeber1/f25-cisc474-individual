@@ -1,63 +1,75 @@
 import Link from 'next/link';
-import { 
-  getCourseById, 
-  getCurrentUser, 
+import {
+  getCourseById,
+  getCurrentUser,
   getUserRole,
   getAssignmentsByCourse,
   getGradesByStudent,
   getSubmissionByStudent,
   getGradeBySubmission,
-  getEnrollmentsByUser 
-} from '../../../_lib/mockData';
+  getEnrollmentsByUser,
+  type Assignment,
+  type Submission,
+  type Grade
+} from '../../../_lib/dataProvider';
 
 interface GradesPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function GradesPage({ params }: GradesPageProps) {
-  const resolvedParams = await params;
-  const courseId = parseInt(resolvedParams.id);
-  const course = getCourseById(courseId);
-  const currentUser = getCurrentUser();
-  const userRole = getUserRole(currentUser.id, courseId);
-  const assignments = getAssignmentsByCourse(courseId);
+  try {
+    const resolvedParams = await params;
+    const courseId = resolvedParams.id; // Keep as string
+    const course = await getCourseById(courseId);
+    const currentUser = await getCurrentUser();
+    const userRole = await getUserRole(currentUser.id, courseId);
+    const assignments = await getAssignmentsByCourse(courseId);
 
-  if (!course) {
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Course not found</h1>
-      </div>
-    );
-  }
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
 
-  // For students, show their own grades
-  const studentGrades = userRole === 'student' ? getGradesByStudent(currentUser.id) : [];
+    if (!course || !currentUser) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1>Course not found</h1>
+        </div>
+      );
+    }
+
+    // For students, show their own grades
+    const studentGrades = userRole === 'student' ? await getGradesByStudent(currentUser.id) : [];
 
   // Calculate student's course statistics
-  const calculateStats = () => {
-    if (userRole !== 'student') return null;
-
-    const courseSubmissions = assignments.map(assignment => {
-      const submission = getSubmissionByStudent(assignment.id, currentUser.id);
-      const grade = submission ? getGradeBySubmission(submission.id) : null;
-      return { assignment, submission, grade };
-    });
+  let stats = null;
+  interface CourseSubmission {
+    assignment: Assignment;
+    submission: Submission | null;
+    grade: Grade | null;
+  }
+  let courseSubmissions: CourseSubmission[] = [];
+  if (userRole === 'student') {
+    courseSubmissions = await Promise.all(
+      assignmentsArray.map(async assignment => {
+        const submission = await getSubmissionByStudent(assignment.id, currentUser.id);
+        const grade = submission ? await getGradeBySubmission(submission.id) : null;
+        return { assignment, submission, grade };
+      })
+    );
 
     const gradedSubmissions = courseSubmissions.filter(item => item.grade);
     const totalPoints = gradedSubmissions.reduce((sum, item) => sum + item.grade!.score, 0);
     const maxPoints = gradedSubmissions.reduce((sum, item) => sum + item.grade!.maxScore, 0);
     const percentage = maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0;
 
-    return {
+    stats = {
       totalPoints,
       maxPoints,
       percentage,
       gradedCount: gradedSubmissions.length,
-      totalCount: assignments.length
+      totalCount: assignmentsArray.length
     };
-  };
-
-  const stats = calculateStats();
+  }
 
   const getGradeColor = (score: number, maxScore: number) => {
     const percentage = (score / maxScore) * 100;
@@ -291,10 +303,11 @@ export default async function GradesPage({ params }: GradesPageProps) {
               </tr>
             </thead>
             <tbody>
-              {assignments.map((assignment, index) => {
-                const submission = userRole === 'student' ? 
-                  getSubmissionByStudent(assignment.id, currentUser.id) : null;
-                const grade = submission ? getGradeBySubmission(submission.id) : null;
+              {assignmentsArray.map((assignment, index) => {
+                const submissionData = userRole === 'student' ?
+                  courseSubmissions.find(cs => cs.assignment.id === assignment.id) : null;
+                const submission = submissionData?.submission || null;
+                const grade = submissionData?.grade || null;
                 const gradeColor = grade ? getGradeColor(grade.score, grade.maxScore) : null;
                 const percentage = grade ? (grade.score / grade.maxScore) * 100 : 0;
                 
@@ -324,16 +337,16 @@ export default async function GradesPage({ params }: GradesPageProps) {
                     }}>
                       <span style={{
                         fontSize: '0.75rem',
-                        backgroundColor: assignment.type === 'reflection' ? '#f3e8ff' : 
-                                       assignment.type === 'file' ? '#dbeafe' : '#dcfce7',
-                        color: assignment.type === 'reflection' ? '#7c3aed' : 
-                               assignment.type === 'file' ? '#2563eb' : '#15803d',
+                        backgroundColor: assignment.type === 'REFLECTION' ? '#f3e8ff' :
+                                       assignment.type === 'FILE' ? '#dbeafe' : '#dcfce7',
+                        color: assignment.type === 'REFLECTION' ? '#7c3aed' :
+                               assignment.type === 'FILE' ? '#2563eb' : '#15803d',
                         padding: '0.25rem 0.5rem',
                         borderRadius: '0.25rem',
                         textTransform: 'capitalize'
                       }}>
                         {assignment.type}
-                        {assignment.type === 'reflection' && ' ✨'}
+                        {assignment.type === 'REFLECTION' && ' ✨'}
                       </span>
                     </td>
                     <td style={{
@@ -427,7 +440,7 @@ export default async function GradesPage({ params }: GradesPageProps) {
           </table>
         </div>
 
-        {assignments.length === 0 && (
+        {assignmentsArray.length === 0 && (
           <div style={{
             padding: '3rem',
             textAlign: 'center',
@@ -447,5 +460,16 @@ export default async function GradesPage({ params }: GradesPageProps) {
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[Grades Page] Error loading grades:', error);
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Grades</h1>
+        <p style={{ color: '#6b7280' }}>
+          There was an error loading the grades. Please try again later.
+        </p>
+      </div>
+    );
+  }
 }
