@@ -37,23 +37,7 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
 
 // API functions that directly call our NestJS endpoints
 export async function getCurrentUser(): Promise<User> {
-  // Check for session cookie on the server side
-  if (typeof window === 'undefined') {
-    // Server-side: use cookies
-    const { cookies } = await import('next/headers');
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('currentUserId')?.value;
-
-    if (userId) {
-      try {
-        return await getUserById(userId);
-      } catch (error) {
-        console.error('Failed to get user by ID from session:', error);
-      }
-    }
-  }
-
-  // Fallback: return the first user for backward compatibility
+  // Simple implementation: return the first user
   const users = await apiRequest<User[]>('/users');
   if (users.length === 0) {
     throw new Error('No users found');

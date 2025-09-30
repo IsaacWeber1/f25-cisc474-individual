@@ -8,9 +8,8 @@ import {
   getSkillTagsByCategory
 } from '../_lib/dataProvider';
 
-// Force dynamic rendering to handle cookies properly
+// Dynamic rendering for API calls
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default async function ProfilePage() {
   try {
