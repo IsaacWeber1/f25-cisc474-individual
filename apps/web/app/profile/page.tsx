@@ -1,12 +1,15 @@
 import Link from 'next/link';
-import { 
-  getCurrentUser, 
+import {
+  getCurrentUser,
   getUserRole,
   getCoursesByStudent,
   getRecentGrades,
   getRecentActivityByUser,
-  getSkillTagsByCategory 
+  getSkillTagsByCategory
 } from '../_lib/dataProvider';
+
+// Force dynamic rendering to handle cookies properly
+export const dynamic = 'force-dynamic';
 
 export default async function ProfilePage() {
   try {
