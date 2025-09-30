@@ -3,10 +3,10 @@ services:
     name: api
     env: node
     plan: free
-    rootDir: apps/api
-    buildCommand: cd ../.. && npm install && npm run build
-    startCommand: node dist/main.js
-    preDeployCommand: cd ../.. && npx prisma migrate deploy && npx prisma db seed
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: node apps/api/dist/main.js
+    preDeployCommand: npx prisma migrate deploy && npx prisma db seed
     healthCheckPath: /
     autoDeploy: true
     envVars:
