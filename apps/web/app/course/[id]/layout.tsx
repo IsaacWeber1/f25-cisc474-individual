@@ -2,6 +2,9 @@ import Link from 'next/link';
 import Navigation from '../../_components/Navigation';
 import { getCourseById, getCurrentUser, getUserRole } from '../../_lib/dataProvider';
 
+// Force dynamic rendering to handle cookies properly
+export const dynamic = 'force-dynamic';
+
 interface CourseLayoutProps {
   children: React.ReactNode;
   params: Promise<{ id: string }>;
