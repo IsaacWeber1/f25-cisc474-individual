@@ -6,6 +6,51 @@ import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/data
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
+  // Check if API is configured for production
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NODE_ENV === 'production' && (!apiUrl || apiUrl === 'http://localhost:3000')) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        textAlign: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '3rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          maxWidth: '600px'
+        }}>
+          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#dc2626' }}>
+            ⚠️ API Configuration Required
+          </h1>
+          <p style={{ color: '#6b7280', marginBottom: '1rem', lineHeight: 1.6 }}>
+            This application requires a backend API to function. Please configure the
+            <code style={{
+              backgroundColor: '#f3f4f6',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '0.25rem',
+              margin: '0 0.25rem',
+              fontFamily: 'monospace'
+            }}>
+              NEXT_PUBLIC_API_URL
+            </code>
+            environment variable in your Vercel project settings.
+          </p>
+          <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            Current: <code style={{ fontFamily: 'monospace' }}>{apiUrl || 'not set'}</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const currentUser = await getCurrentUser();
   const userCourses = await getCoursesByUser(currentUser.id);
   const dataSource = getDataSourceInfo();
