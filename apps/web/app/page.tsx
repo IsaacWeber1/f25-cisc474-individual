@@ -10,6 +10,63 @@ export default async function Dashboard() {
   // Get current user session (but don't require login)
   const sessionUserId = await getSessionUserId();
 
+  // If no user is logged in, show a welcome page
+  if (!sessionUserId) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        textAlign: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '3rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+          maxWidth: '600px'
+        }}>
+          <h1 style={{
+            fontSize: '3rem',
+            marginBottom: '1rem',
+            color: '#111827',
+            fontWeight: 'bold'
+          }}>
+            Welcome to LMS
+          </h1>
+          <p style={{
+            color: '#6b7280',
+            marginBottom: '2rem',
+            lineHeight: 1.6,
+            fontSize: '1.125rem'
+          }}>
+            Your comprehensive Learning Management System for courses, assignments, and more.
+          </p>
+          <a
+            href="/login"
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 2rem',
+              borderRadius: '0.5rem',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              transition: 'background-color 0.2s'
+            }}
+          >
+            Get Started
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   // Check if API is configured for production
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (process.env.NODE_ENV === 'production' && (!apiUrl || apiUrl === 'http://localhost:3000')) {
