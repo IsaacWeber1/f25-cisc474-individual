@@ -1,18 +1,14 @@
 import Navigation from './_components/Navigation';
 import CourseCard from './_components/CourseCard';
 import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/dataProvider';
-import { redirect } from 'next/navigation';
 import { getSessionUserId } from './_lib/sessionServer';
 
 // Dynamic rendering for API calls
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  // Check if user is logged in
+  // Get current user session (but don't require login)
   const sessionUserId = await getSessionUserId();
-  if (!sessionUserId) {
-    redirect('/login');
-  }
 
   // Check if API is configured for production
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
