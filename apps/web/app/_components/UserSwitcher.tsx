@@ -2,20 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllUsers } from '../_lib/apiClient';
+import { getAllUsers, type User as ApiUser } from '../_lib/apiClient';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  enrollments: Array<{
-    role: string;
-    course: {
-      code: string;
-      title: string;
-    };
-  }>;
-}
+type User = ApiUser;
 
 interface UserSwitcherProps {
   currentUser: User | null;
@@ -31,7 +20,16 @@ export default function UserSwitcher({ currentUser }: UserSwitcherProps) {
     const fetchUsers = async () => {
       try {
         const allUsers = await getAllUsers();
-        setUsers(allUsers);
+        // Filter to show only one student and one professor for simplicity
+        const student = allUsers.find(u =>
+          u.enrollments.some(e => e.role === 'STUDENT')
+        );
+        const professor = allUsers.find(u =>
+          u.enrollments.some(e => e.role === 'PROFESSOR')
+        );
+
+        const filteredUsers = [student, professor].filter(Boolean) as User[];
+        setUsers(filteredUsers);
       } catch (error) {
         console.error('Failed to fetch users:', error);
       }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Course } from '../_lib/dataProvider';
+import { Course } from '../_lib/apiClient';
 import { useState } from 'react';
 
 interface CourseCardProps {

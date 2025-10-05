@@ -21,7 +21,7 @@ export default async function CourseLayout({ children, params }: CourseLayoutPro
     if (!course || !currentUser) {
       return (
         <>
-          <Navigation />
+          <Navigation currentUser={currentUser} />
           <div style={{ padding: '2rem', textAlign: 'center' }}>
             <h1>Course not found</h1>
             <p>The course you&apos;re looking for doesn&apos;t exist.</p>
@@ -39,8 +39,8 @@ export default async function CourseLayout({ children, params }: CourseLayoutPro
 
     return (
     <>
-      <Navigation />
-      
+      <Navigation currentUser={currentUser} />
+
       {/* Course Header */}
       <div style={{
         backgroundColor: '#1e40af',
@@ -196,7 +196,7 @@ export default async function CourseLayout({ children, params }: CourseLayoutPro
     console.error('[Course Layout] Error loading course data:', error);
     return (
       <>
-        <Navigation />
+        <Navigation currentUser={null} />
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <h1>Error Loading Course</h1>
           <p style={{ color: '#6b7280' }}>

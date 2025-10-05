@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import FilterControls from '../../../_components/FilterControls';
-import { 
-  getAssignmentsByCourse, 
-  getCurrentUser, 
+import {
+  getAssignmentsByCourse,
+  getCurrentUser,
   getUserRole,
   getSubmissionByStudent,
-  getGradeBySubmission 
+  getGradeBySubmission
 } from '../../../_lib/dataProvider';
 
 interface AssignmentsListProps {
@@ -18,7 +18,12 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
     const resolvedParams = await params;
     const resolvedSearchParams = await searchParams;
     const courseId = resolvedParams.id; // Keep as string
-    const currentUser = await getCurrentUser();
+
+    // Parallelize initial data fetching
+    const [currentUser, assignmentsData] = await Promise.all([
+      getCurrentUser(),
+      getAssignmentsByCourse(courseId)
+    ]);
 
     if (!currentUser) {
       return (
@@ -30,7 +35,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
     }
 
     const userRole = await getUserRole(currentUser.id, courseId);
-    let assignments = await getAssignmentsByCourse(courseId);
+    let assignments = assignmentsData;
 
     // Ensure assignments is an array
     const assignmentsArray = Array.isArray(assignments) ? assignments : [];

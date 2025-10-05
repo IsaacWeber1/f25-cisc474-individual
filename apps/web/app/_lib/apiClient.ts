@@ -36,17 +36,9 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
 }
 
 // API functions that directly call our NestJS endpoints
-export async function getCurrentUser(): Promise<User> {
-  // Simple implementation: return the first user
-  const users = await apiRequest<User[]>('/users');
-  if (users.length === 0) {
-    throw new Error('No users found');
-  }
-  const user = users[0];
-  if (!user) {
-    throw new Error('No valid user found');
-  }
-  return user;
+// Note: This is a client-side function. For server-side, use getCurrentUserServer from dataProvider
+export async function getCurrentUserClient(userId: string): Promise<User> {
+  return getUserById(userId);
 }
 
 export async function getAllUsers(): Promise<User[]> {
