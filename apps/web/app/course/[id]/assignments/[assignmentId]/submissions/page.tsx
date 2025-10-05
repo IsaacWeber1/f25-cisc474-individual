@@ -217,6 +217,7 @@ export default async function SubmissionsPage({ params, searchParams }: Submissi
                 assignment={assignment}
                 submission={selectedSubmission}
                 grade={selectedGrade}
+                currentUserId={currentUser.id}
                 onGradeUpdate={() => {
                   // Refresh the page to show updated grade
                   window.location.reload();

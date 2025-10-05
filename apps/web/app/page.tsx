@@ -1,11 +1,19 @@
 import Navigation from './_components/Navigation';
 import CourseCard from './_components/CourseCard';
 import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/dataProvider';
+import { redirect } from 'next/navigation';
+import { getSessionUserId } from './_lib/sessionServer';
 
 // Dynamic rendering for API calls
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
+  // Check if user is logged in
+  const sessionUserId = await getSessionUserId();
+  if (!sessionUserId) {
+    redirect('/login');
+  }
+
   // Check if API is configured for production
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (process.env.NODE_ENV === 'production' && (!apiUrl || apiUrl === 'http://localhost:3000')) {
@@ -51,13 +59,17 @@ export default async function Dashboard() {
     );
   }
 
-  const currentUser = await getCurrentUser();
+  // Parallelize independent API calls
+  const [currentUser, dataSource] = await Promise.all([
+    getCurrentUser(),
+    Promise.resolve(getDataSourceInfo())
+  ]);
+
   const userCourses = await getCoursesByUser(currentUser.id);
-  const dataSource = getDataSourceInfo();
 
   return (
     <>
-      <Navigation />
+      <Navigation currentUser={currentUser} />
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',

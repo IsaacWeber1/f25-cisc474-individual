@@ -24,10 +24,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Fetch all users from the API
-    fetch('http://localhost:3000/users')
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    fetch(`${apiUrl}/users`)
       .then(res => res.json())
       .then(data => {
-        setUsers(data);
+        // Filter to show only one student and one professor for simplicity
+        const student = data.find((u: User) =>
+          u.enrollments.some(e => e.role === 'STUDENT')
+        );
+        const professor = data.find((u: User) =>
+          u.enrollments.some(e => e.role === 'PROFESSOR')
+        );
+
+        const filteredUsers = [student, professor].filter(Boolean);
+        setUsers(filteredUsers);
         setLoading(false);
       })
       .catch(err => {
@@ -247,28 +257,25 @@ export default function LoginPage() {
         <div style={{
           marginTop: '2rem',
           padding: '1rem',
-          backgroundColor: '#fef3c7',
-          border: '1px solid #fcd34d',
+          backgroundColor: '#f0f9ff',
+          border: '1px solid #bae6fd',
           borderRadius: '0.5rem'
         }}>
           <h4 style={{
             fontSize: '0.875rem',
             fontWeight: 600,
-            color: '#92400e',
+            color: '#0c4a6e',
             marginBottom: '0.5rem'
           }}>
-            Quick Test Accounts:
+            Available Test Accounts:
           </h4>
-          <ul style={{
+          <p style={{
             fontSize: '0.75rem',
-            color: '#78350f',
-            margin: 0,
-            paddingLeft: '1.25rem'
+            color: '#0c4a6e',
+            margin: 0
           }}>
-            <li><strong>Student:</strong> John Student or Mike Smith</li>
-            <li><strong>TA:</strong> Mike TA</li>
-            <li><strong>Professor:</strong> Dr. Bart or Dr. Smith</li>
-          </ul>
+            Choose between a <strong>Student</strong> account or a <strong>Professor</strong> account to explore different views of the system.
+          </p>
         </div>
       </div>
     </div>

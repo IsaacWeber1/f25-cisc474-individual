@@ -23,10 +23,13 @@ export default async function ProfilePage() {
       );
     }
 
-    const courses = await getCoursesByStudent(currentUser.id);
-    const recentGrades = await getRecentGrades(currentUser.id, 5);
-    const recentActivity = await getRecentActivityByUser(currentUser.id);
-    const skillTags = await getSkillTagsByCategory();
+    // Parallelize all independent data fetching
+    const [courses, recentGrades, recentActivity, skillTags] = await Promise.all([
+      getCoursesByStudent(currentUser.id),
+      getRecentGrades(currentUser.id, 5),
+      getRecentActivityByUser(currentUser.id),
+      getSkillTagsByCategory()
+    ]);
 
     // Ensure arrays are properly handled
     const coursesArray = Array.isArray(courses) ? courses : [];

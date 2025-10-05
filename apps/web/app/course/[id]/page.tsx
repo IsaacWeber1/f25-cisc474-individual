@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { 
-  getCourseById, 
-  getCurrentUser, 
-  getUserRole, 
+import {
+  getCourseById,
+  getCurrentUser,
+  getUserRole,
   getAssignmentsByCourse,
   getReflectionsByUser,
   getRecentGrades,
@@ -18,8 +18,11 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
   const courseId = resolvedParams.id; // Keep as string
 
   try {
-    const course = await getCourseById(courseId);
-    const currentUser = await getCurrentUser();
+    // Parallelize independent API calls
+    const [course, currentUser] = await Promise.all([
+      getCourseById(courseId),
+      getCurrentUser()
+    ]);
 
     if (!course || !currentUser) {
       return (
@@ -29,11 +32,16 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
       );
     }
 
-    const userRole = await getUserRole(currentUser.id, courseId);
-    const assignments = await getAssignmentsByCourse(courseId);
-    const reflections = await getReflectionsByUser(currentUser.id);
-    const recentGrades = await getRecentGrades(currentUser.id, 3);
-    const classMedian = await getClassMedianGrade(courseId) || 0;
+    // Parallelize all calls that depend on having course/user
+    const [userRole, assignments, reflections, recentGrades, classMedian] = await Promise.all([
+      getUserRole(currentUser.id, courseId),
+      getAssignmentsByCourse(courseId),
+      getReflectionsByUser(currentUser.id),
+      getRecentGrades(currentUser.id, 3),
+      getClassMedianGrade(courseId)
+    ]);
+
+    const classMedianValue = classMedian || 0;
 
     // Ensure assignments is an array before sorting
     const assignmentsArray = Array.isArray(assignments) ? assignments : [];
@@ -158,7 +166,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 color: '#7c3aed',
                 marginBottom: '0.5rem'
               }}>
-                {classMedian.toFixed(1)}%
+                {classMedianValue.toFixed(1)}%
               </div>
               <div style={{ color: '#7c3aed', fontWeight: 500 }}>
                 Class Median

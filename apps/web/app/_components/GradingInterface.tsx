@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createGrade, updateGrade, getCurrentUser } from '../_lib/dataProvider';
+import { createGrade, updateGrade } from '../_lib/apiClient';
 
 interface Grade {
   id: string;
@@ -33,10 +33,11 @@ interface GradingInterfaceProps {
   assignment: Assignment;
   submission: Submission;
   grade: Grade | null;
+  currentUserId: string;
   onGradeUpdate?: () => void;
 }
 
-export default function GradingInterface({ assignment, submission, grade, onGradeUpdate }: GradingInterfaceProps) {
+export default function GradingInterface({ assignment, submission, grade, currentUserId, onGradeUpdate }: GradingInterfaceProps) {
   const [score, setScore] = useState(grade?.score?.toString() || '');
   const [feedback, setFeedback] = useState(grade?.feedback || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,8 +53,6 @@ export default function GradingInterface({ assignment, submission, grade, onGrad
     setIsSubmitting(true);
 
     try {
-      const currentUser = await getCurrentUser();
-
       const gradeData = {
         score: scoreNum,
         maxScore: assignment.maxPoints,
@@ -68,7 +67,7 @@ export default function GradingInterface({ assignment, submission, grade, onGrad
         // Create new grade
         result = await createGrade({
           submissionId: submission.id,
-          gradedById: currentUser.id,
+          gradedById: currentUserId,
           ...gradeData,
         });
       }

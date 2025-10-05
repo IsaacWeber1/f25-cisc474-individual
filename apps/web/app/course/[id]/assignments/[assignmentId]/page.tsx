@@ -328,6 +328,7 @@ export default async function AssignmentDetail({ params }: AssignmentDetailProps
               submission={submission}
               grade={grade}
               courseId={courseId}
+              currentUserId={currentUser.id}
             />
           ) : (
             /* Instructor View */

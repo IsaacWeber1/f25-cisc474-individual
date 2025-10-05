@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSubmission, updateSubmission, getCurrentUser } from '../_lib/dataProvider';
+import { createSubmission, updateSubmission } from '../_lib/apiClient';
 
 interface Submission {
   id: string;
@@ -34,9 +34,10 @@ interface SubmissionInterfaceProps {
   submission: Submission | null;
   grade: Grade | null;
   courseId: string;
+  currentUserId: string;
 }
 
-export default function SubmissionInterface({ assignment, submission, grade, courseId }: SubmissionInterfaceProps) {
+export default function SubmissionInterface({ assignment, submission, grade, courseId, currentUserId }: SubmissionInterfaceProps) {
   const [content, setContent] = useState(submission?.content || '');
   const [isDraft, setIsDraft] = useState(submission?.status === 'DRAFT');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,12 +59,11 @@ export default function SubmissionInterface({ assignment, submission, grade, cou
     setIsSubmitting(true);
 
     try {
-      const currentUser = await getCurrentUser();
       const status: 'DRAFT' | 'SUBMITTED' = asDraft ? 'DRAFT' : 'SUBMITTED';
 
       const submissionData = {
         assignmentId: assignment.id,
-        studentId: currentUser.id,
+        studentId: currentUserId,
         type: assignment.type,
         status,
         content: assignment.type === 'TEXT' ? content : undefined,

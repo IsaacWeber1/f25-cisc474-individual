@@ -1,8 +1,23 @@
 // Direct API integration - no more mock data!
 // All functions now connect directly to our NestJS backend
 
+// IMPORTANT: This file uses server-only APIs (cookies) and should only be imported by server components
+import { getSessionUserId } from './sessionServer';
+import * as apiClient from './apiClient';
+
+// Server-side function that reads the current user from the session cookie
+export async function getCurrentUser() {
+  const userId = await getSessionUserId();
+
+  if (!userId) {
+    throw new Error('No user session found. Please log in.');
+  }
+
+  return apiClient.getUserById(userId);
+}
+
+// Re-export all other API client functions
 export {
-  getCurrentUser,
   getAllUsers,
   getUserById,
   getAllCourses,
