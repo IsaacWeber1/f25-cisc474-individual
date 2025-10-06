@@ -1,47 +1,68 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   getCurrentUser,
-  getUserRole,
   getCoursesByStudent,
   getRecentGrades,
   getRecentActivityByUser,
-  getSkillTagsByCategory
-} from '../_lib/dataProvider';
+  getSkillTagsByCategory,
+  type User,
+  type Course,
+  type Grade
+} from '../_lib/dataProviderClient';
 
-// Dynamic rendering for API calls
-export const dynamic = 'force-dynamic';
+interface Activity {
+  action: string;
+  timestamp: string;
+}
 
-export default async function ProfilePage() {
-  try {
-    const currentUser = await getCurrentUser();
+interface SkillTag {
+  id: string;
+  name: string;
+}
 
-    if (!currentUser) {
-      return (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h1>User not found</h1>
-        </div>
-      );
-    }
+export default function ProfilePage() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [recentGrades, setRecentGrades] = useState<Grade[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [skillTags, setSkillTags] = useState<SkillTag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    // Parallelize all independent data fetching
-    const [courses, recentGrades, recentActivity, skillTags] = await Promise.all([
-      getCoursesByStudent(currentUser.id),
-      getRecentGrades(currentUser.id, 5),
-      getRecentActivityByUser(currentUser.id),
-      getSkillTagsByCategory()
-    ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    // Ensure arrays are properly handled
-    const coursesArray = Array.isArray(courses) ? courses : [];
-    const recentGradesArray = Array.isArray(recentGrades) ? recentGrades : [];
-    const recentActivityArray = Array.isArray(recentActivity) ? recentActivity : [];
-    const skillTagsArray = Array.isArray(skillTags) ? skillTags : [];
+        const user = await getCurrentUser();
+        setCurrentUser(user);
 
-    // Calculate some stats
-    const totalCourses = coursesArray.length;
-    const averageGrade = recentGradesArray.length > 0
-      ? recentGradesArray.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGradesArray.length
-      : 0;
+        // Parallelize all independent data fetching
+        const [coursesData, gradesData, activityData, skillsData] = await Promise.all([
+          getCoursesByStudent(user.id),
+          getRecentGrades(user.id, 5),
+          getRecentActivityByUser(user.id),
+          getSkillTagsByCategory()
+        ]);
+
+        setCourses(Array.isArray(coursesData) ? coursesData : []);
+        setRecentGrades(Array.isArray(gradesData) ? gradesData : []);
+        setRecentActivity(Array.isArray(activityData) ? activityData : []);
+        setSkillTags(Array.isArray(skillsData) ? skillsData : []);
+      } catch (err) {
+        console.error('[Profile Page] Error loading profile:', err);
+        setError('Failed to load profile data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const getGradeColor = (percentage: number) => {
     if (percentage >= 90) return '#15803d';
@@ -50,9 +71,87 @@ export default async function ProfilePage() {
     return '#dc2626';
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString();
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '3rem',
+            height: '3rem',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <p style={{
+            marginTop: '1rem',
+            color: '#6b7280',
+            fontSize: '1.125rem'
+          }}>
+            Loading profile...
+          </p>
+          <style>{`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !currentUser) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#dc2626' }}>
+            Error Loading Profile
+          </h1>
+          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
+            {error || 'User not found'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 2rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate some stats
+  const totalCourses = courses.length;
+  const averageGrade = recentGrades.length > 0
+    ? recentGrades.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGrades.length
+    : 0;
 
   return (
     <div style={{
@@ -83,7 +182,7 @@ export default async function ProfilePage() {
             alignItems: 'center',
             gap: '2rem'
           }}>
-            <Link 
+            <Link
               href="/"
               style={{
                 fontSize: '1.25rem',
@@ -95,7 +194,7 @@ export default async function ProfilePage() {
               LMS
             </Link>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <Link 
+              <Link
                 href="/"
                 style={{
                   padding: '0.5rem 0.75rem',
@@ -108,7 +207,7 @@ export default async function ProfilePage() {
               >
                 Dashboard
               </Link>
-              <Link 
+              <Link
                 href="/profile"
                 style={{
                   padding: '0.5rem 0.75rem',
@@ -276,7 +375,7 @@ export default async function ProfilePage() {
                 color: '#7c3aed',
                 marginBottom: '0.25rem'
               }}>
-                {recentActivityArray.length}
+                {recentActivity.length}
               </div>
               <div style={{
                 fontSize: '0.875rem',
@@ -316,8 +415,8 @@ export default async function ProfilePage() {
                 display: 'grid',
                 gap: '1rem'
               }}>
-                {coursesArray.map((course) => (
-                  <Link 
+                {courses.map((course) => (
+                  <Link
                     key={course.id}
                     href={`/course/${course.id}`}
                     style={{
@@ -369,8 +468,8 @@ export default async function ProfilePage() {
                         color: '#4b5563',
                         lineHeight: 1.5
                       }}>
-                        {course.description.length > 100 
-                          ? `${course.description.substring(0, 100)}...` 
+                        {course.description.length > 100
+                          ? `${course.description.substring(0, 100)}...`
                           : course.description
                         }
                       </p>
@@ -401,7 +500,7 @@ export default async function ProfilePage() {
                 flexDirection: 'column',
                 gap: '1rem'
               }}>
-                {recentActivityArray.length > 0 ? recentActivityArray.map((activity, index) => (
+                {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
                   <div key={index} style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -470,7 +569,7 @@ export default async function ProfilePage() {
                 flexDirection: 'column',
                 gap: '0.75rem'
               }}>
-                {recentGradesArray.slice(0, 5).map((grade, index) => (
+                {recentGrades.slice(0, 5).map((grade, index) => (
                   <div key={grade.id} style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -529,7 +628,7 @@ export default async function ProfilePage() {
                 flexWrap: 'wrap',
                 gap: '0.5rem'
               }}>
-                {skillTagsArray.slice(0, 8).map((skill, index) => (
+                {skillTags.slice(0, 8).map((skill) => (
                   <span key={skill.id} style={{
                     fontSize: '0.75rem',
                     backgroundColor: '#f3e8ff',
@@ -608,16 +707,5 @@ export default async function ProfilePage() {
         </div>
       </div>
     </div>
-    );
-  } catch (error) {
-    console.error('[Profile Page] Error loading profile:', error);
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Error Loading Profile</h1>
-        <p style={{ color: '#6b7280' }}>
-          There was an error loading the profile. Please try again later.
-        </p>
-      </div>
-    );
-  }
+  );
 }

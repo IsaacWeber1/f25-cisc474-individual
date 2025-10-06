@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   getCourseById,
@@ -7,59 +11,156 @@ import {
   getReflectionsByUser,
   getRecentGrades,
   getClassMedianGrade
-} from '../../_lib/dataProvider';
+} from '../../_lib/dataProviderClient';
+import type { User, Course, Assignment, Grade } from '../../_lib/dataProviderClient';
 
-interface CourseOverviewProps {
-  params: Promise<{ id: string }>;
-}
+export default function CourseOverview() {
+  const params = useParams();
+  const courseId = params.id as string;
 
-export default async function CourseOverview({ params }: CourseOverviewProps) {
-  const resolvedParams = await params;
-  const courseId = resolvedParams.id; // Keep as string
+  const [course, setCourse] = useState<Course | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [reflections, setReflections] = useState<any[]>([]);
+  const [recentGrades, setRecentGrades] = useState<Grade[]>([]);
+  const [classMedian, setClassMedian] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  try {
-    // Parallelize independent API calls
-    const [course, currentUser] = await Promise.all([
-      getCourseById(courseId),
-      getCurrentUser()
-    ]);
+  useEffect(() => {
+    if (!courseId) return;
 
-    if (!course || !currentUser) {
-      return (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h1>Course not found</h1>
-        </div>
-      );
-    }
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    // Parallelize all calls that depend on having course/user
-    const [userRole, assignments, reflections, recentGrades, classMedian] = await Promise.all([
-      getUserRole(currentUser.id, courseId),
-      getAssignmentsByCourse(courseId),
-      getReflectionsByUser(currentUser.id),
-      getRecentGrades(currentUser.id, 3),
-      getClassMedianGrade(courseId)
-    ]);
+        // Parallelize independent API calls
+        const [courseData, currentUserData] = await Promise.all([
+          getCourseById(courseId),
+          getCurrentUser()
+        ]);
 
-    const classMedianValue = classMedian || 0;
+        if (!courseData || !currentUserData) {
+          setError('Course not found');
+          setLoading(false);
+          return;
+        }
 
-    // Ensure assignments is an array before sorting
-    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+        setCourse(courseData);
+        setCurrentUser(currentUserData);
 
-    // Get recent assignments (last 3)
-    const recentAssignments = assignmentsArray
-      .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
-      .slice(0, 3);
+        // Parallelize all calls that depend on having course/user
+        const [userRoleData, assignmentsData, reflectionsData, recentGradesData, classMedianData] = await Promise.all([
+          getUserRole(currentUserData.id, courseId),
+          getAssignmentsByCourse(courseId),
+          getReflectionsByUser(currentUserData.id),
+          getRecentGrades(currentUserData.id, 3),
+          getClassMedianGrade(courseId)
+        ]);
 
-    // Calculate course stats
-    const totalAssignments = assignmentsArray.length;
-    const reflectionCount = Array.isArray(reflections) ? reflections.length : 0;
-    const recentGradesArray = Array.isArray(recentGrades) ? recentGrades : [];
-    const averageGrade = recentGradesArray.length > 0
-      ? recentGradesArray.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGradesArray.length
-      : 0;
+        setUserRole(userRoleData);
+        setAssignments(Array.isArray(assignmentsData) ? assignmentsData : []);
+        setReflections(Array.isArray(reflectionsData) ? reflectionsData : []);
+        setRecentGrades(Array.isArray(recentGradesData) ? recentGradesData : []);
+        setClassMedian(classMedianData || 0);
+        setLoading(false);
+      } catch (err) {
+        console.error('[Course Page] Error loading course data:', err);
+        setError('There was an error loading the course data. Please try again later.');
+        setLoading(false);
+      }
+    };
 
+    fetchData();
+  }, [courseId]);
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger useEffect by forcing a re-render
+    window.location.reload();
+  };
+
+  if (loading) {
     return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px'
+      }}>
+        <div style={{
+          border: '4px solid #f3f4f6',
+          borderTop: '4px solid #2563eb',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Error Loading Course</h1>
+        <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
+          {error}
+        </p>
+        <button
+          onClick={handleRetry}
+          style={{
+            backgroundColor: '#2563eb',
+            color: 'white',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.375rem',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 500
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!course || !currentUser) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1>Course not found</h1>
+      </div>
+    );
+  }
+
+  const classMedianValue = classMedian || 0;
+
+  // Ensure assignments is an array before sorting
+  const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+
+  // Get recent assignments (last 3)
+  const recentAssignments = assignmentsArray
+    .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
+    .slice(0, 3);
+
+  // Calculate course stats
+  const totalAssignments = assignmentsArray.length;
+  const reflectionCount = Array.isArray(reflections) ? reflections.length : 0;
+  const recentGradesArray = Array.isArray(recentGrades) ? recentGrades : [];
+  const averageGrade = recentGradesArray.length > 0
+    ? recentGradesArray.reduce((sum, grade) => sum + (grade.score / grade.maxScore) * 100, 0) / recentGradesArray.length
+    : 0;
+
+  return (
     <div>
       {/* Course Description */}
       <div style={{ marginBottom: '2rem' }}>
@@ -71,7 +172,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         }}>
           Course Overview
         </h1>
-        
+
         {course.description && (
           <p style={{
             fontSize: '1.125rem',
@@ -203,8 +304,8 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
             }}>
               Recent Assignments
             </h3>
-            <Link 
-              href={`/course/${resolvedParams.id}/assignments`}
+            <Link
+              href={`/course/${courseId}/assignments`}
               style={{
                 color: '#2563eb',
                 fontSize: '0.875rem',
@@ -231,8 +332,8 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                     alignItems: 'flex-start',
                     marginBottom: '0.5rem'
                   }}>
-                    <Link 
-                      href={`/course/${resolvedParams.id}/assignments/${assignment.id}`}
+                    <Link
+                      href={`/course/${courseId}/assignments/${assignment.id}`}
                       style={{
                         fontWeight: 500,
                         color: '#111827',
@@ -312,7 +413,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                     <span style={{
                       fontSize: '0.875rem',
                       fontWeight: 600,
-                      color: grade.score / grade.maxScore >= 0.8 ? '#15803d' : 
+                      color: grade.score / grade.maxScore >= 0.8 ? '#15803d' :
                              grade.score / grade.maxScore >= 0.6 ? '#d97706' : '#dc2626'
                     }}>
                       {grade.score}/{grade.maxScore}
@@ -358,8 +459,8 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         gap: '1rem',
         flexWrap: 'wrap'
       }}>
-        <Link 
-          href={`/course/${resolvedParams.id}/assignments`}
+        <Link
+          href={`/course/${courseId}/assignments`}
           style={{
             backgroundColor: '#2563eb',
             color: 'white',
@@ -371,9 +472,9 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         >
           View All Assignments
         </Link>
-        
-        <Link 
-          href={`/course/${resolvedParams.id}/reflections`}
+
+        <Link
+          href={`/course/${courseId}/reflections`}
           style={{
             backgroundColor: '#15803d',
             color: 'white',
@@ -385,10 +486,10 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         >
           View Reflections
         </Link>
-        
+
         {userRole === 'STUDENT' && (
-          <Link 
-            href={`/course/${resolvedParams.id}/grades`}
+          <Link
+            href={`/course/${courseId}/grades`}
             style={{
               backgroundColor: '#d97706',
               color: 'white',
@@ -403,16 +504,5 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
         )}
       </div>
     </div>
-    );
-  } catch (error) {
-    console.error('[Course Page] Error loading course data:', error);
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Error Loading Course</h1>
-        <p style={{ color: '#6b7280' }}>
-          There was an error loading the course data. Please try again later.
-        </p>
-      </div>
-    );
-  }
+  );
 }

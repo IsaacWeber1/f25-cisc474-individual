@@ -1,3 +1,14 @@
+import { config } from 'dotenv';
+import { resolve, join } from 'path';
+
+// Load environment variables from .env file
+// When compiled, __dirname will be in dist/, so we need to go up to the apps/api directory
+const envPath = join(__dirname, '..', '.env');
+config({ path: envPath });
+
+// Also try loading from the root of the monorepo
+config({ path: join(__dirname, '..', '..', '..', '.env') });
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 

@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   getCourseById,
@@ -8,65 +12,184 @@ import {
   getGradeBySubmission,
   getReflectionTemplatesByUser,
   type Assignment
-} from '../../../_lib/dataProvider';
+} from '../../../_lib/dataProviderClient';
 
-interface ReflectionsListProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ status?: string }>;
-}
+export default function ReflectionsList() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const courseId = params.id as string;
 
-export default async function ReflectionsList({ params, searchParams }: ReflectionsListProps) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const courseId = resolvedParams.id;
-  const course = getCourseById(courseId);
-  const currentUser = await getCurrentUser();
-  const userRole = await getUserRole(currentUser.id, courseId);
-  
-  // Get reflection assignments for this course
-  const allAssignments = await getAssignmentsByCourse(courseId);
-  const reflections = allAssignments.filter(assignment => assignment.type === 'REFLECTION');
-  const templates = await getReflectionTemplatesByUser(currentUser.id);
+  const [course, setCourse] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [reflections, setReflections] = useState<Assignment[]>([]);
+  const [filteredReflections, setFilteredReflections] = useState<Assignment[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [reflectionStatuses, setReflectionStatuses] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!course) {
+  const currentStatus = searchParams.get('status') || 'all';
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Parallelize initial data fetching
+        const [courseData, user] = await Promise.all([
+          getCourseById(courseId),
+          getCurrentUser()
+        ]);
+
+        if (!courseData) {
+          setError('Course not found');
+          setLoading(false);
+          return;
+        }
+
+        setCourse(courseData);
+        setCurrentUser(user);
+
+        // Fetch role, assignments, and templates in parallel
+        const [role, allAssignments, templatesData] = await Promise.all([
+          getUserRole(user.id, courseId),
+          getAssignmentsByCourse(courseId),
+          getReflectionTemplatesByUser(user.id)
+        ]);
+
+        setUserRole(role);
+        setTemplates(templatesData);
+
+        // Filter to reflection assignments only
+        const reflectionAssignments = allAssignments.filter(assignment => assignment.type === 'REFLECTION');
+        setReflections(reflectionAssignments);
+
+        // Filter by status if specified - parallelize status checks
+        let filtered = reflectionAssignments;
+        if (currentStatus && currentStatus !== 'all') {
+          const statusChecks = await Promise.all(
+            reflectionAssignments.map(async (reflection) => {
+              const submission = await getSubmissionByStudent(reflection.id, user.id);
+              const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+              let includeReflection = false;
+              if (currentStatus === 'completed') {
+                includeReflection = !!(submission && grade);
+              } else if (currentStatus === 'pending') {
+                includeReflection = !submission || !grade;
+              } else {
+                includeReflection = true;
+              }
+
+              return includeReflection ? reflection : null;
+            })
+          );
+          filtered = statusChecks.filter(reflection => reflection !== null) as Assignment[];
+        }
+
+        setFilteredReflections(filtered);
+
+        // Fetch all statuses in parallel
+        const statusPromises = filtered.map(async (reflection) => {
+          const submission = await getSubmissionByStudent(reflection.id, user.id);
+          const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+          if (submission && grade) {
+            return { id: reflection.id, status: 'completed', color: '#15803d', bg: '#dcfce7' };
+          }
+          return { id: reflection.id, status: 'pending', color: '#d97706', bg: '#fef3c7' };
+        });
+
+        const statuses = await Promise.all(statusPromises);
+        const statusMap = statuses.reduce((acc, status) => {
+          acc[status.id] = status;
+          return acc;
+        }, {} as Record<string, any>);
+        setReflectionStatuses(statusMap);
+
+        setLoading(false);
+      } catch (err) {
+        console.error('[Reflections Page] Error loading reflections:', err);
+        setError('There was an error loading the reflections. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    if (courseId) {
+      fetchData();
+    }
+  }, [courseId, currentStatus]);
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    window.location.reload();
+  };
+
+  if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Course not found</h1>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e5e7eb',
+          borderTop: '4px solid #7c3aed',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: '#6b7280', fontSize: '1rem' }}>Loading reflections...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  // Filter reflections by status if specified
-  let filteredReflections = reflections;
-  if (resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
-    const filteredResults = await Promise.all(
-      reflections.map(async reflection => {
-        const submission = await getSubmissionByStudent(reflection.id, currentUser.id);
-        const grade = submission ? await getGradeBySubmission(submission.id) : null;
-
-        let includeReflection = false;
-        if (resolvedSearchParams.status === 'completed') {
-          includeReflection = !!(submission && grade);
-        } else if (resolvedSearchParams.status === 'pending') {
-          includeReflection = !submission || !grade;
-        } else {
-          includeReflection = true;
-        }
-
-        return includeReflection ? reflection : null;
-      })
+  if (error) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem',
+        textAlign: 'center',
+        padding: '2rem'
+      }}>
+        <h1 style={{ color: '#dc2626', fontSize: '1.5rem', fontWeight: 600 }}>
+          Error Loading Reflections
+        </h1>
+        <p style={{ color: '#6b7280' }}>{error}</p>
+        <button
+          onClick={handleRetry}
+          style={{
+            backgroundColor: '#7c3aed',
+            color: 'white',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            border: 'none',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+        >
+          Retry
+        </button>
+      </div>
     );
-    filteredReflections = filteredResults.filter(reflection => reflection !== null);
   }
-
-  const getReflectionStatus = async (reflection: Assignment) => {
-    const submission = await getSubmissionByStudent(reflection.id, currentUser.id);
-    const grade = submission ? await getGradeBySubmission(submission.id) : null;
-    if (submission && grade) {
-      return { status: 'completed', color: '#15803d', bg: '#dcfce7' };
-    }
-    return { status: 'pending', color: '#d97706', bg: '#fef3c7' };
-  };
 
   return (
     <div>
@@ -83,59 +206,58 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
             color: '#111827',
             marginBottom: '0.5rem'
           }}>
-            Reflections ✨
+            Reflections
           </h1>
           <p style={{ color: '#6b7280' }}>
-            {userRole === 'student' ? 
+            {userRole === 'student' ?
               'Complete reflections to reflect on your learning journey' :
               'View and manage student reflection responses'
             }
           </p>
         </div>
 
-        {/* Status Filter */}
         {userRole === 'student' && (
           <div style={{
             display: 'flex',
             gap: '0.5rem',
             alignItems: 'center'
           }}>
-            <Link 
-              href={`/course/${resolvedParams.id}/reflections`}
+            <Link
+              href={`/course/${courseId}/reflections`}
               style={{
                 padding: '0.5rem 1rem',
                 borderRadius: '0.375rem',
                 textDecoration: 'none',
-                backgroundColor: !resolvedSearchParams.status || resolvedSearchParams.status === 'all' ? '#2563eb' : 'white',
-                color: !resolvedSearchParams.status || resolvedSearchParams.status === 'all' ? 'white' : '#374151',
+                backgroundColor: !currentStatus || currentStatus === 'all' ? '#2563eb' : 'white',
+                color: !currentStatus || currentStatus === 'all' ? 'white' : '#374151',
                 border: '1px solid #2563eb',
                 fontSize: '0.875rem'
               }}
             >
               All
             </Link>
-            <Link 
-              href={`/course/${resolvedParams.id}/reflections?status=pending`}
+            <Link
+              href={`/course/${courseId}/reflections?status=pending`}
               style={{
                 padding: '0.5rem 1rem',
                 borderRadius: '0.375rem',
                 textDecoration: 'none',
-                backgroundColor: resolvedSearchParams.status === 'pending' ? '#d97706' : 'white',
-                color: resolvedSearchParams.status === 'pending' ? 'white' : '#374151',
+                backgroundColor: currentStatus === 'pending' ? '#d97706' : 'white',
+                color: currentStatus === 'pending' ? 'white' : '#374151',
                 border: '1px solid #d97706',
                 fontSize: '0.875rem'
               }}
             >
               Pending
             </Link>
-            <Link 
-              href={`/course/${resolvedParams.id}/reflections?status=completed`}
+            <Link
+              href={`/course/${courseId}/reflections?status=completed`}
               style={{
                 padding: '0.5rem 1rem',
                 borderRadius: '0.375rem',
                 textDecoration: 'none',
-                backgroundColor: resolvedSearchParams.status === 'completed' ? '#15803d' : 'white',
-                color: resolvedSearchParams.status === 'completed' ? 'white' : '#374151',
+                backgroundColor: currentStatus === 'completed' ? '#15803d' : 'white',
+                color: currentStatus === 'completed' ? 'white' : '#374151',
                 border: '1px solid #15803d',
                 fontSize: '0.875rem'
               }}
@@ -146,14 +268,13 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
         )}
       </div>
 
-      {/* Reflections Grid */}
       <div style={{
         display: 'grid',
         gap: '1.5rem'
       }}>
         {filteredReflections.length > 0 ? (
-          await Promise.all(filteredReflections.map(async (reflection) => {
-            const statusInfo = await getReflectionStatus(reflection);
+          filteredReflections.map((reflection) => {
+            const statusInfo = reflectionStatuses[reflection.id];
             const template = templates.find(t => t.assignmentId === reflection.id);
 
             return (
@@ -194,7 +315,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                         borderRadius: '0.25rem',
                         fontWeight: 500
                       }}>
-                        ✨ Reflection
+                        Reflection
                       </span>
                     </div>
 
@@ -219,27 +340,28 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                     </div>
                   </div>
 
-                  {/* Status and Actions */}
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'flex-end',
                     gap: '0.75rem'
                   }}>
-                    <span style={{
-                      fontSize: '0.75rem',
-                      backgroundColor: statusInfo.bg,
-                      color: statusInfo.color,
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '1rem',
-                      fontWeight: 500,
-                      textTransform: 'capitalize'
-                    }}>
-                      {statusInfo.status}
-                    </span>
+                    {statusInfo && (
+                      <span style={{
+                        fontSize: '0.75rem',
+                        backgroundColor: statusInfo.bg,
+                        color: statusInfo.color,
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '1rem',
+                        fontWeight: 500,
+                        textTransform: 'capitalize'
+                      }}>
+                        {statusInfo.status}
+                      </span>
+                    )}
 
                     <Link
-                      href={`/course/${resolvedParams.id}/reflections/${reflection.id}`}
+                      href={`/course/${courseId}/reflections/${reflection.id}`}
                       style={{
                         backgroundColor: '#7c3aed',
                         color: 'white',
@@ -251,7 +373,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                       }}
                     >
                       {userRole === 'student' ? (
-                        statusInfo.status === 'completed' ? 'View Reflection' : 'Complete Reflection'
+                        statusInfo?.status === 'completed' ? 'View Reflection' : 'Complete Reflection'
                       ) : (
                         'View Responses'
                       )}
@@ -259,7 +381,6 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                   </div>
                 </div>
 
-                {/* Template Preview */}
                 {template && template.prompts && template.prompts.length > 0 && (
                   <div style={{
                     backgroundColor: '#f8fafc',
@@ -312,7 +433,7 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
                 )}
               </div>
             );
-          }))
+          })
         ) : (
           <div style={{
             textAlign: 'center',
@@ -325,7 +446,6 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
               fontSize: '3rem',
               marginBottom: '1rem'
             }}>
-              ✨
             </div>
             <h3 style={{
               fontSize: '1.25rem',
@@ -336,8 +456,8 @@ export default async function ReflectionsList({ params, searchParams }: Reflecti
               No reflections found
             </h3>
             <p style={{ color: '#6b7280' }}>
-              {resolvedSearchParams.status ? 
-                'Try adjusting your filters to see more reflections.' : 
+              {currentStatus && currentStatus !== 'all' ?
+                'Try adjusting your filters to see more reflections.' :
                 'No reflection assignments have been created for this course yet.'
               }
             </p>

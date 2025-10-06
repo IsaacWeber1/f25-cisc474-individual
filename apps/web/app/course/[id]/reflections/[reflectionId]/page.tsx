@@ -1,7 +1,11 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  getAssignmentById, 
-  getCurrentUser, 
+import {
+  getAssignmentById,
+  getCurrentUser,
   getUserRole,
   getCourseById,
   getSubmissionByStudent,
@@ -10,49 +14,184 @@ import {
   getRecentGrades,
   getPeerBenchmark,
   getRecentFeedback
-} from '../../../../_lib/dataProvider';
+} from '../../../../_lib/dataProviderClient';
 
-interface ReflectionDetailProps {
-  params: Promise<{ id: string; reflectionId: string }>;
-}
+export default function ReflectionDetail() {
+  const params = useParams();
+  const courseId = params.id as string;
+  const reflectionId = params.reflectionId as string;
 
-export default async function ReflectionDetail({ params }: ReflectionDetailProps) {
-  const resolvedParams = await params;
-  try {
-    const courseId = resolvedParams.id; // Keep as string
-    const assignmentId = resolvedParams.reflectionId; // Keep as string
-    const currentUser = await getCurrentUser();
-    const userRole = await getUserRole(currentUser.id, courseId);
-    const course = await getCourseById(courseId);
-    const assignment = await getAssignmentById(assignmentId);
-  
-  if (!course || !assignment || assignment.type !== 'REFLECTION') {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [course, setCourse] = useState<any>(null);
+  const [assignment, setAssignment] = useState<any>(null);
+  const [submission, setSubmission] = useState<any>(null);
+  const [grade, setGrade] = useState<any>(null);
+  const [template, setTemplate] = useState<any>(null);
+  const [recentGrades, setRecentGrades] = useState<any[]>([]);
+  const [peerBenchmark, setPeerBenchmark] = useState<number>(0);
+  const [recentFeedback, setRecentFeedback] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch initial data in parallel
+        const [user, courseData, assignmentData] = await Promise.all([
+          getCurrentUser(),
+          getCourseById(courseId),
+          getAssignmentById(reflectionId)
+        ]);
+
+        if (!courseData || !assignmentData || assignmentData.type !== 'REFLECTION') {
+          setError('Reflection not found');
+          setLoading(false);
+          return;
+        }
+
+        setCurrentUser(user);
+        setCourse(courseData);
+        setAssignment(assignmentData);
+
+        // Fetch user role
+        const role = await getUserRole(user.id, courseId);
+        setUserRole(role);
+
+        // Fetch submission and grade for students
+        if (role === 'STUDENT') {
+          const [submissionData, templates, grades, benchmark, feedback] = await Promise.all([
+            getSubmissionByStudent(reflectionId, user.id),
+            getReflectionTemplatesByAssignment(reflectionId),
+            getRecentGrades(user.id, 5),
+            getPeerBenchmark(user.id, courseId),
+            getRecentFeedback(user.id, 3)
+          ]);
+
+          setSubmission(submissionData);
+          setTemplate(templates.length > 0 ? templates[0] : null);
+          setRecentGrades(grades);
+          setPeerBenchmark(benchmark);
+          setRecentFeedback(feedback);
+
+          // Fetch grade if submission exists
+          if (submissionData) {
+            const gradeData = await getGradeBySubmission(submissionData.id);
+            setGrade(gradeData);
+          }
+        } else {
+          // For instructors, just fetch templates
+          const templates = await getReflectionTemplatesByAssignment(reflectionId);
+          setTemplate(templates.length > 0 ? templates[0] : null);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('[Reflection Detail] Error loading reflection:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred while loading the reflection');
+        setLoading(false);
+      }
+    };
+
+    if (courseId && reflectionId) {
+      fetchData();
+    }
+  }, [courseId, reflectionId]);
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger re-fetch by updating a dependency
+    window.location.reload();
+  };
+
+  if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Reflection not found</h1>
-        <Link 
-          href={`/course/${resolvedParams.id}/reflections`}
-          style={{
-            color: '#2563eb',
-            textDecoration: 'none',
-            fontWeight: 500
-          }}
-        >
-          ← Back to Reflections
-        </Link>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e5e7eb',
+          borderTop: '4px solid #7c3aed',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: '#6b7280', fontSize: '1rem' }}>Loading reflection...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  const submission = userRole === 'STUDENT' ? await getSubmissionByStudent(assignmentId, currentUser.id) : null;
-  const grade = submission ? await getGradeBySubmission(submission.id) : null;
-  const templates = await getReflectionTemplatesByAssignment(assignmentId);
-  const template = templates.length > 0 ? templates[0] : null;
-
-  // Get data for the reflection based on template requirements
-  const recentGrades = await getRecentGrades(currentUser.id, 5);
-  const peerBenchmark = await getPeerBenchmark(currentUser.id, courseId);
-  const recentFeedback = await getRecentFeedback(currentUser.id, 3);
+  if (error) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem',
+        textAlign: 'center',
+        padding: '2rem'
+      }}>
+        <h1 style={{ color: '#dc2626', fontSize: '1.5rem', fontWeight: 600 }}>
+          {error === 'Reflection not found' ? 'Reflection not found' : 'Error Loading Reflection'}
+        </h1>
+        <p style={{ color: '#6b7280' }}>
+          {error === 'Reflection not found'
+            ? 'The reflection you are looking for does not exist.'
+            : error
+          }
+        </p>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            onClick={handleRetry}
+            style={{
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+          <Link
+            href={`/course/${courseId}/reflections`}
+            style={{
+              backgroundColor: '#6b7280',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontWeight: 500,
+              textDecoration: 'none',
+              display: 'inline-block'
+            }}
+          >
+            Back to Reflections
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = () => {
     if (userRole !== 'STUDENT') return null;
@@ -71,14 +210,14 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
         color: '#6b7280',
         marginBottom: '1.5rem'
       }}>
-        <Link 
-          href={`/course/${resolvedParams.id}/reflections`}
+        <Link
+          href={`/course/${courseId}/reflections`}
           style={{ color: '#2563eb', textDecoration: 'none' }}
         >
           Reflections
         </Link>
         <span style={{ margin: '0 0.5rem' }}>›</span>
-        <span>{assignment.title}</span>
+        <span>{assignment?.title}</span>
       </div>
 
       {/* Header */}
@@ -109,7 +248,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 margin: 0,
                 marginBottom: '0.5rem'
               }}>
-                {assignment.title}
+                {assignment?.title}
               </h1>
               <p style={{
                 fontSize: '1.125rem',
@@ -141,7 +280,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
           lineHeight: 1.6,
           margin: 0
         }}>
-          {assignment.description}
+          {assignment?.description}
         </p>
       </div>
 
@@ -238,9 +377,9 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                         cursor: 'pointer',
                         fontSize: '0.875rem'
                       }}>
-                        <input 
-                          type="radio" 
-                          name="focusSkill" 
+                        <input
+                          type="radio"
+                          name="focusSkill"
                           value={skill}
                           style={{ margin: 0 }}
                         />
@@ -336,7 +475,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                       </span>
                       <span style={{
                         fontWeight: 600,
-                        color: gradeRecord.score / gradeRecord.maxScore >= 0.8 ? '#15803d' : 
+                        color: gradeRecord.score / gradeRecord.maxScore >= 0.8 ? '#15803d' :
                                gradeRecord.score / gradeRecord.maxScore >= 0.6 ? '#d97706' : '#dc2626'
                       }}>
                         {gradeRecord.score}/{gradeRecord.maxScore}
@@ -399,8 +538,8 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                   color: '#6b21a8',
                   fontStyle: 'italic'
                 }}>
-                  {recentFeedback.length > 0 
-                    ? `"${recentFeedback[0]}"` 
+                  {recentFeedback.length > 0
+                    ? `"${recentFeedback[0]}"`
                     : 'No recent feedback available'
                   }
                 </div>
@@ -422,7 +561,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
               }}>
                 Assignment Details
               </h3>
-              
+
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -435,7 +574,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 }}>
                   <span style={{ color: '#6b7280' }}>Due Date:</span>
                   <span style={{ color: '#374151', fontWeight: 500 }}>
-                    {new Date(assignment.dueDate).toLocaleDateString()}
+                    {assignment?.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
                 <div style={{
@@ -444,7 +583,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 }}>
                   <span style={{ color: '#6b7280' }}>Points:</span>
                   <span style={{ color: '#374151', fontWeight: 500 }}>
-                    {assignment.maxPoints}
+                    {assignment?.maxPoints}
                   </span>
                 </div>
                 <div style={{
@@ -482,7 +621,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
             }}>
               Your Reflection
             </h2>
-            
+
             <div style={{
               textAlign: 'center'
             }}>
@@ -564,7 +703,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
             color: '#6b7280',
             textAlign: 'center'
           }}>
-            Submitted on {submission?.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'Unknown'} • 
+            Submitted on {submission?.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'Unknown'} •
             Graded on {new Date(grade.gradedAt).toLocaleDateString()}
           </div>
         </div>
@@ -624,7 +763,7 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
                 color: '#15803d',
                 marginBottom: '0.5rem'
               }}>
-                {assignment.maxPoints}
+                {assignment?.maxPoints}
               </div>
               <div style={{ color: '#15803d', fontWeight: 500 }}>
                 Total Points
@@ -689,25 +828,4 @@ export default async function ReflectionDetail({ params }: ReflectionDetailProps
       )}
     </div>
   );
-  } catch (error) {
-    console.error('[Reflection Detail] Error loading reflection:', error);
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Error Loading Reflection</h1>
-        <p style={{ color: '#6b7280' }}>
-          There was an error loading the reflection. Please try again later.
-        </p>
-        <Link
-          href={`/course/${resolvedParams.id}/reflections`}
-          style={{
-            color: '#2563eb',
-            textDecoration: 'none',
-            fontWeight: 500
-          }}
-        >
-          ← Back to Reflections
-        </Link>
-      </div>
-    );
-  }
 }

@@ -1,17 +1,97 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Navigation from './_components/Navigation';
 import CourseCard from './_components/CourseCard';
-import { getCurrentUser, getCoursesByUser, getDataSourceInfo } from './_lib/dataProvider';
-import { getSessionUserId } from './_lib/sessionServer';
+import { getCurrentUser, getCoursesByUser, getDataSourceInfo, type User, type Course } from './_lib/dataProviderClient';
 
-// Dynamic rendering for API calls
-export const dynamic = 'force-dynamic';
+export default function Dashboard() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userCourses, setUserCourses] = useState<Course[]>([]);
+  const [dataSource, setDataSource] = useState({ source: '', environment: '', apiUrl: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function Dashboard() {
-  // Get current user session (but don't require login)
-  const sessionUserId = await getSessionUserId();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  // If no user is logged in, show a welcome page
-  if (!sessionUserId) {
+        // Check if API is configured for production
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (!apiUrl || apiUrl === 'http://localhost:3000')) {
+          setError('API_CONFIG_REQUIRED');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch current user
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+
+        // Fetch data source info and user courses in parallel
+        const [sourceInfo, courses] = await Promise.all([
+          Promise.resolve(getDataSourceInfo()),
+          getCoursesByUser(user.id)
+        ]);
+
+        setDataSource(sourceInfo);
+        setUserCourses(courses);
+      } catch (err) {
+        console.error('[Dashboard] Error loading data:', err);
+        if (err instanceof Error && err.message.includes('No user session')) {
+          setError('NO_SESSION');
+        } else {
+          setError('LOAD_ERROR');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '3rem',
+            height: '3rem',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <p style={{
+            marginTop: '1rem',
+            color: '#6b7280',
+            fontSize: '1.125rem'
+          }}>
+            Loading dashboard...
+          </p>
+          <style>{`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
+
+  // No session - redirect to login
+  if (error === 'NO_SESSION') {
     return (
       <div style={{
         minHeight: '100vh',
@@ -67,9 +147,8 @@ export default async function Dashboard() {
     );
   }
 
-  // Check if API is configured for production
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (process.env.NODE_ENV === 'production' && (!apiUrl || apiUrl === 'http://localhost:3000')) {
+  // API config error
+  if (error === 'API_CONFIG_REQUIRED') {
     return (
       <div style={{
         minHeight: '100vh',
@@ -105,21 +184,58 @@ export default async function Dashboard() {
             environment variable in your Vercel project settings.
           </p>
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-            Current: <code style={{ fontFamily: 'monospace' }}>{apiUrl || 'not set'}</code>
+            Current: <code style={{ fontFamily: 'monospace' }}>{process.env.NEXT_PUBLIC_API_URL || 'not set'}</code>
           </p>
         </div>
       </div>
     );
   }
 
-  // Parallelize independent API calls
-  const [currentUser, dataSource] = await Promise.all([
-    getCurrentUser(),
-    Promise.resolve(getDataSourceInfo())
-  ]);
+  // Error state
+  if (error === 'LOAD_ERROR') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '3rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          maxWidth: '600px',
+          textAlign: 'center'
+        }}>
+          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#dc2626' }}>
+            Error Loading Dashboard
+          </h1>
+          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
+            There was an error loading the dashboard. Please try again later.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 2rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const userCourses = await getCoursesByUser(currentUser.id);
-
+  // Main dashboard
   return (
     <>
       <Navigation currentUser={currentUser} />
@@ -135,7 +251,7 @@ export default async function Dashboard() {
             color: '#111827',
             marginBottom: '0.5rem'
           }}>
-            Welcome back, {currentUser.name}!
+            Welcome back, {currentUser?.name}!
           </h1>
           <p style={{ color: '#4b5563' }}>
             Here are your courses for this semester.
@@ -227,7 +343,7 @@ export default async function Dashboard() {
               </a>
             </div>
           </div>
-          
+
           <div style={{
             backgroundColor: '#f0fdf4',
             border: '1px solid #bbf7d0',
@@ -249,7 +365,7 @@ export default async function Dashboard() {
               No recent activity to display.
             </p>
           </div>
-          
+
           <div style={{
             backgroundColor: '#fff7ed',
             border: '1px solid #fed7aa',
