@@ -1,10 +1,13 @@
 // API client for connecting to our NestJS backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-// Generic API fetch helper
-async function apiRequest<T>(endpoint: string): Promise<T> {
+// Generic API fetch helper with retry logic for Render.com spin-up
+async function apiRequest<T>(endpoint: string, retryCount = 0): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  console.log(`[apiClient] Making request to: ${url}`);
+  const maxRetries = 3;
+  const retryDelay = 2000; // 2 seconds base delay
+
+  console.log(`[apiClient] Making request to: ${url}${retryCount > 0 ? ` (retry ${retryCount}/${maxRetries})` : ''}`);
 
   try {
     const response = await fetch(url, {
@@ -12,8 +15,16 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
         'Content-Type': 'application/json',
       },
       // Add timeout and handle connection errors better on Vercel
-      signal: AbortSignal.timeout(5000), // 5 second timeout
+      signal: AbortSignal.timeout(10000), // 10 second timeout (increased for Render spin-up)
     });
+
+    // Handle 502 Bad Gateway (Render.com spinning up)
+    if (response.status === 502 && retryCount < maxRetries) {
+      const delay = retryDelay * (retryCount + 1); // Exponential backoff
+      console.log(`[apiClient] 502 error (backend starting up). Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return apiRequest<T>(endpoint, retryCount + 1);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -24,6 +35,14 @@ async function apiRequest<T>(endpoint: string): Promise<T> {
     const data = await response.json();
     return data;
   } catch (error) {
+    // Retry on network errors (CORS issues during Render spin-up)
+    if (error instanceof TypeError && error.message.includes('fetch') && retryCount < maxRetries) {
+      const delay = retryDelay * (retryCount + 1);
+      console.log(`[apiClient] Network error (possible backend spin-up). Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return apiRequest<T>(endpoint, retryCount + 1);
+    }
+
     if (error instanceof SyntaxError && error.message.includes('JSON')) {
       console.error(`[apiClient] JSON parse error for ${url}:`, error);
     } else if (error instanceof Error && error.name === 'AbortError') {
