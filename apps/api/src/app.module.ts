@@ -6,6 +6,7 @@ import { CoursesModule } from './courses/courses.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { GradesModule } from './grades/grades.module';
+import { PrismaService } from './prisma.service';
 
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
@@ -20,6 +21,7 @@ import { AppController } from './app.controller';
     GradesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
+  exports: [PrismaService],
 })
 export class AppModule {}

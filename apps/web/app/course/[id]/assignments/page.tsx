@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import FilterControls from '../../../_components/FilterControls';
 import {
@@ -6,88 +10,128 @@ import {
   getUserRole,
   getSubmissionByStudent,
   getGradeBySubmission
-} from '../../../_lib/dataProvider';
+} from '../../../_lib/dataProviderClient';
 
-interface AssignmentsListProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ type?: string; status?: string }>;
-}
+export default function AssignmentsList() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const courseId = params.id as string;
 
-export default async function AssignmentsList({ params, searchParams }: AssignmentsListProps) {
-  try {
-    const resolvedParams = await params;
-    const resolvedSearchParams = await searchParams;
-    const courseId = resolvedParams.id; // Keep as string
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [filteredAssignments, setFilteredAssignments] = useState<any[]>([]);
+  const [assignmentStatuses, setAssignmentStatuses] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    // Parallelize initial data fetching
-    const [currentUser, assignmentsData] = await Promise.all([
-      getCurrentUser(),
-      getAssignmentsByCourse(courseId)
-    ]);
+  const currentType = searchParams.get('type') || 'all';
+  const currentStatus = searchParams.get('status') || 'all';
 
-    if (!currentUser) {
-      return (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h1>Error Loading Assignments</h1>
-          <p>Unable to load user data.</p>
-        </div>
-      );
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    const userRole = await getUserRole(currentUser.id, courseId);
-    let assignments = assignmentsData;
+        // Parallelize initial data fetching
+        const [user, assignmentsData] = await Promise.all([
+          getCurrentUser(),
+          getAssignmentsByCourse(courseId)
+        ]);
 
-    // Ensure assignments is an array
-    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
-
-    // Filter by type if specified
-    if (resolvedSearchParams.type && resolvedSearchParams.type !== 'all') {
-      assignments = assignmentsArray.filter(assignment => assignment.type === resolvedSearchParams.type);
-    } else {
-      assignments = assignmentsArray;
-    }
-
-    // Filter by status for students
-    if (userRole === 'STUDENT' && resolvedSearchParams.status && resolvedSearchParams.status !== 'all') {
-      const filteredAssignments = [];
-      for (const assignment of assignments) {
-        const submission = await getSubmissionByStudent(assignment.id, currentUser.id);
-        const grade = submission ? await getGradeBySubmission(submission.id) : null;
-
-        let includeAssignment = false;
-        switch (resolvedSearchParams.status) {
-          case 'pending':
-            includeAssignment = !submission;
-            break;
-          case 'submitted':
-            includeAssignment = !!submission && !grade;
-            break;
-          case 'graded':
-            includeAssignment = !!submission && !!grade;
-            break;
-          default:
-            includeAssignment = true;
+        if (!user) {
+          setError('Unable to load user data.');
+          setLoading(false);
+          return;
         }
-        if (includeAssignment) {
-          filteredAssignments.push(assignment);
+
+        setCurrentUser(user);
+
+        const role = await getUserRole(user.id, courseId);
+        setUserRole(role);
+
+        // Ensure assignments is an array
+        const assignmentsArray = Array.isArray(assignmentsData) ? assignmentsData : [];
+        setAssignments(assignmentsArray);
+
+        // Filter by type if specified
+        let filtered = assignmentsArray;
+        if (currentType && currentType !== 'all') {
+          filtered = assignmentsArray.filter(assignment => assignment.type === currentType);
         }
+
+        // Filter by status for students - parallelize submission and grade fetching
+        if (role === 'STUDENT' && currentStatus && currentStatus !== 'all') {
+          const statusChecks = await Promise.all(
+            filtered.map(async (assignment) => {
+              const submission = await getSubmissionByStudent(assignment.id, user.id);
+              const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+              let includeAssignment = false;
+              switch (currentStatus) {
+                case 'pending':
+                  includeAssignment = !submission;
+                  break;
+                case 'submitted':
+                  includeAssignment = !!submission && !grade;
+                  break;
+                case 'graded':
+                  includeAssignment = !!submission && !!grade;
+                  break;
+                default:
+                  includeAssignment = true;
+              }
+
+              return includeAssignment ? assignment : null;
+            })
+          );
+          filtered = statusChecks.filter(assignment => assignment !== null);
+        }
+
+        // Sort assignments by due date (newest first)
+        const sortedAssignments = filtered.sort((a, b) =>
+          new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+        );
+        setFilteredAssignments(sortedAssignments);
+
+        // Fetch all statuses in parallel for students
+        if (role === 'STUDENT') {
+          const statusPromises = sortedAssignments.map(async (assignment) => {
+            const submission = await getSubmissionByStudent(assignment.id, user.id);
+            const grade = submission ? await getGradeBySubmission(submission.id) : null;
+
+            if (!submission) return { id: assignment.id, status: 'pending', color: '#dc2626', bg: '#fef2f2' };
+            if (!grade) return { id: assignment.id, status: 'submitted', color: '#d97706', bg: '#fef3c7' };
+            return { id: assignment.id, status: 'graded', color: '#15803d', bg: '#dcfce7' };
+          });
+
+          const statuses = await Promise.all(statusPromises);
+          const statusMap = statuses.reduce((acc, status) => {
+            acc[status.id] = status;
+            return acc;
+          }, {} as Record<string, any>);
+          setAssignmentStatuses(statusMap);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('[Assignments Page] Error loading assignments:', err);
+        setError('There was an error loading the assignments. Please try again later.');
+        setLoading(false);
       }
-      assignments = filteredAssignments;
-    }
-
-    // Sort assignments by due date (newest first) - ensure assignments is still an array
-    const sortedAssignments = Array.isArray(assignments) ? assignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()) : [];
-
-    const getAssignmentStatus = async (assignmentId: string) => {
-      if (userRole !== 'STUDENT') return null;
-
-      const submission = await getSubmissionByStudent(assignmentId, currentUser.id);
-      const grade = submission ? await getGradeBySubmission(submission.id) : null;
-
-      if (!submission) return { status: 'pending', color: '#dc2626', bg: '#fef2f2' };
-      if (!grade) return { status: 'submitted', color: '#d97706', bg: '#fef3c7' };
-      return { status: 'graded', color: '#15803d', bg: '#dcfce7' };
     };
+
+    if (courseId) {
+      fetchData();
+    }
+  }, [courseId, currentType, currentStatus]);
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    window.location.reload();
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -101,6 +145,69 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
         return { color: '#6b7280', bg: '#f3f4f6' };
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e5e7eb',
+          borderTop: '4px solid #2563eb',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: '#6b7280', fontSize: '1rem' }}>Loading assignments...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem',
+        textAlign: 'center',
+        padding: '2rem'
+      }}>
+        <h1 style={{ color: '#dc2626', fontSize: '1.5rem', fontWeight: 600 }}>
+          Error Loading Assignments
+        </h1>
+        <p style={{ color: '#6b7280' }}>{error}</p>
+        <button
+          onClick={handleRetry}
+          style={{
+            backgroundColor: '#2563eb',
+            color: 'white',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            border: 'none',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -120,11 +227,10 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
             Assignments
           </h1>
           <p style={{ color: '#6b7280' }}>
-            {sortedAssignments.length} assignment{sortedAssignments.length !== 1 ? 's' : ''} found
+            {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''} found
           </p>
         </div>
 
-        {/* Quick create button for TAs and Professors */}
         {(userRole === 'TA' || userRole === 'PROFESSOR') && (
           <div style={{
             backgroundColor: '#2563eb',
@@ -139,23 +245,21 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
         )}
       </div>
 
-      {/* Filter Controls */}
-      <FilterControls 
-        currentType={resolvedSearchParams.type || 'all'}
-        currentStatus={resolvedSearchParams.status || 'all'}
-        courseId={resolvedParams.id}
+      <FilterControls
+        currentType={currentType}
+        currentStatus={currentStatus}
+        courseId={courseId}
         userRole={userRole}
       />
 
-      {/* Assignments Grid */}
       <div style={{
         display: 'grid',
         gap: '1.5rem',
         marginTop: '2rem'
       }}>
-        {sortedAssignments.length > 0 ? (
-          await Promise.all(sortedAssignments.map(async (assignment) => {
-            const statusInfo = await getAssignmentStatus(assignment.id);
+        {filteredAssignments.length > 0 ? (
+          filteredAssignments.map((assignment) => {
+            const statusInfo = assignmentStatuses[assignment.id];
             const typeColor = getTypeColor(assignment.type);
             const isOverdue = new Date(assignment.dueDate) < new Date() && statusInfo?.status === 'pending';
 
@@ -180,8 +284,8 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                       gap: '0.75rem',
                       marginBottom: '0.5rem'
                     }}>
-                      <Link 
-                        href={`/course/${resolvedParams.id}/assignments/${assignment.id}`}
+                      <Link
+                        href={`/course/${courseId}/assignments/${assignment.id}`}
                         style={{
                           fontSize: '1.25rem',
                           fontWeight: 600,
@@ -191,7 +295,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                       >
                         {assignment.title}
                       </Link>
-                      
+
                       <span style={{
                         fontSize: '0.75rem',
                         backgroundColor: typeColor.bg,
@@ -215,7 +319,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                           borderRadius: '0.25rem',
                           fontWeight: 500
                         }}>
-                          ✨ Special
+                          Special
                         </span>
                       )}
                     </div>
@@ -252,7 +356,6 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                     </div>
                   </div>
 
-                  {/* Status and Actions */}
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -273,8 +376,8 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                       </span>
                     )}
 
-                    <Link 
-                      href={`/course/${resolvedParams.id}/assignments/${assignment.id}`}
+                    <Link
+                      href={`/course/${courseId}/assignments/${assignment.id}`}
                       style={{
                         backgroundColor: assignment.type === 'REFLECTION' ? '#7c3aed' : '#2563eb',
                         color: 'white',
@@ -295,7 +398,6 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                   </div>
                 </div>
 
-                {/* Assignment Instructions Preview */}
                 {assignment.instructions && assignment.instructions.length > 0 && (
                   <div style={{
                     backgroundColor: '#f8fafc',
@@ -348,7 +450,7 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
                 )}
               </div>
             );
-          }))
+          })
         ) : (
           <div style={{
             textAlign: 'center',
@@ -372,8 +474,8 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
               No assignments found
             </h3>
             <p style={{ color: '#6b7280' }}>
-              {resolvedSearchParams.type || resolvedSearchParams.status ? 
-                'Try adjusting your filters to see more assignments.' : 
+              {currentType !== 'all' || currentStatus !== 'all' ?
+                'Try adjusting your filters to see more assignments.' :
                 'No assignments have been created for this course yet.'
               }
             </p>
@@ -381,16 +483,5 @@ export default async function AssignmentsList({ params, searchParams }: Assignme
         )}
       </div>
     </div>
-    );
-  } catch (error) {
-    console.error('[Assignments Page] Error loading assignments:', error);
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1>Error Loading Assignments</h1>
-        <p style={{ color: '#6b7280' }}>
-          There was an error loading the assignments. Please try again later.
-        </p>
-      </div>
-    );
-  }
+  );
 }

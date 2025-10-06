@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class GradesService {
+  constructor(private prisma: PrismaService) {}
+
   async findAll() {
-    return await prisma.grade.findMany({
+    return await this.prisma.grade.findMany({
       include: {
         submission: {
           include: {
@@ -29,7 +29,7 @@ export class GradesService {
   }
 
   async findOne(id: string) {
-    return await prisma.grade.findUnique({
+    return await this.prisma.grade.findUnique({
       where: { id },
       include: {
         submission: {
