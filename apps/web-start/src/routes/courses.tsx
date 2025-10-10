@@ -16,7 +16,7 @@ function RouteComponent() {
   if (isFetching) return <div>Loading...</div>;
 
   if (error) {
-    return <div>Error: {(error as Error).message}</div>;
+    return <div>Error: {(error).message}</div>;
   }
 
   return <div>Courses: {JSON.stringify(data)}</div>;

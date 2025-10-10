@@ -1,15 +1,15 @@
 /// <reference types="vite/client" />
-import type { ReactNode } from 'react';
 import {
-  Outlet,
-  createRootRouteWithContext,
   HeadContent,
+  Outlet,
   Scripts,
+  createRootRouteWithContext,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import TanStackQueryDevtools from '../integrations/devtools';
 import appCss from '../styles.css?url';
+import type { ReactNode } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 
 export interface MyRouterContext {
@@ -47,7 +47,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body style={{ margin: 0, backgroundColor: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <body
+        style={{
+          margin: 0,
+          backgroundColor: '#f8fafc',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}
+      >
         <Outlet />
         <TanStackDevtools
           config={{

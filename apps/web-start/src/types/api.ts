@@ -10,10 +10,10 @@ export interface User {
   emailVerified: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  enrollments: Enrollment[];
-  submissions: Submission[];
-  grades: Grade[];
-  reflectionResponses: ReflectionResponse[];
+  enrollments: Array<Enrollment>;
+  submissions: Array<Submission>;
+  grades: Array<Grade>;
+  reflectionResponses: Array<ReflectionResponse>;
 }
 
 export interface Course {
@@ -27,8 +27,8 @@ export interface Course {
   updatedAt: Date;
   createdById: string;
   createdBy: User;
-  enrollments: Enrollment[];
-  assignments: Assignment[];
+  enrollments: Array<Enrollment>;
+  assignments: Array<Assignment>;
 }
 
 export interface Enrollment {
@@ -48,7 +48,7 @@ export interface Assignment {
   type: 'FILE' | 'TEXT' | 'REFLECTION';
   maxPoints: number;
   dueDate: Date;
-  instructions: string[];
+  instructions: Array<string>;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -56,7 +56,7 @@ export interface Assignment {
   createdById: string;
   course: Course;
   createdBy: User;
-  submissions: Submission[];
+  submissions: Array<Submission>;
   reflectionTemplate?: ReflectionTemplate;
 }
 
@@ -66,7 +66,7 @@ export interface Submission {
   status: 'DRAFT' | 'SUBMITTED' | 'GRADED' | 'LATE';
   submittedAt: Date | null;
   content: string | null;
-  files: File[] | null;
+  files: Array<File> | null;
   createdAt: Date;
   updatedAt: Date;
   assignmentId: string;
@@ -92,7 +92,7 @@ export interface Grade {
 
 export interface ReflectionTemplate {
   id: string;
-  prompts: string[];
+  prompts: Array<string>;
   dataToShow: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;

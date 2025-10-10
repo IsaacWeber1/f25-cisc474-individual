@@ -13,7 +13,7 @@
  */
 export function backendFetcher<T>(
   endpoint: string,
-  retryCount = 0
+  retryCount = 0,
 ): () => Promise<T> {
   const maxRetries = 3;
   const retryDelay = 2000; // 2 seconds base delay
@@ -22,7 +22,7 @@ export function backendFetcher<T>(
     const url = import.meta.env.VITE_BACKEND_URL + endpoint;
 
     console.log(
-      `[fetcher] Making request to: ${url}${retryCount > 0 ? ` (retry ${retryCount}/${maxRetries})` : ''}`
+      `[fetcher] Making request to: ${url}${retryCount > 0 ? ` (retry ${retryCount}/${maxRetries})` : ''}`,
     );
 
     try {
@@ -38,7 +38,7 @@ export function backendFetcher<T>(
       if (response.status === 502 && retryCount < maxRetries) {
         const delay = retryDelay * (retryCount + 1); // Exponential backoff
         console.log(
-          `[fetcher] 502 error (backend starting up). Retrying in ${delay}ms...`
+          `[fetcher] 502 error (backend starting up). Retrying in ${delay}ms...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         return backendFetcher<T>(endpoint, retryCount + 1)();
@@ -47,10 +47,10 @@ export function backendFetcher<T>(
       if (!response.ok) {
         const errorText = await response.text();
         console.error(
-          `[fetcher] ${response.status} error for ${url}: ${errorText}`
+          `[fetcher] ${response.status} error for ${url}: ${errorText}`,
         );
         throw new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -65,7 +65,7 @@ export function backendFetcher<T>(
       ) {
         const delay = retryDelay * (retryCount + 1);
         console.log(
-          `[fetcher] Network error (possible backend spin-up). Retrying in ${delay}ms...`
+          `[fetcher] Network error (possible backend spin-up). Retrying in ${delay}ms...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         return backendFetcher<T>(endpoint, retryCount + 1)();

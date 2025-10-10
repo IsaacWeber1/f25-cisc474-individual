@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import Navigation from '../components/Navigation';
 import CourseCard from '../components/CourseCard';
-import type { User, Course } from '../types/api';
+import type { Course, User } from '../types/api';
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
