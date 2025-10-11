@@ -2,7 +2,9 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
 import CourseCard from '../components/CourseCard';
 import type { Course, User } from '../types/api';
 
@@ -49,114 +51,17 @@ function Dashboard() {
 
   // Loading state - shown while promises are resolving
   if (userLoading) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f8fafc',
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              display: 'inline-block',
-              width: '3rem',
-              height: '3rem',
-              border: '4px solid #e5e7eb',
-              borderTopColor: '#2563eb',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          />
-          <p
-            style={{
-              marginTop: '1rem',
-              color: '#6b7280',
-              fontSize: '1.125rem',
-            }}
-          >
-            Loading dashboard...
-          </p>
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading dashboard..." />;
   }
 
   // Error state
   if (userError) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f8fafc',
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '3rem',
-            borderRadius: '0.75rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            maxWidth: '600px',
-            textAlign: 'center',
-          }}
-        >
-          <h1
-            style={{
-              fontSize: '2rem',
-              marginBottom: '1rem',
-              color: '#dc2626',
-            }}
-          >
-            Error Loading Dashboard
-          </h1>
-          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-            {userError instanceof Error
-              ? userError.message
-              : 'There was an error loading the dashboard. Please try again later.'}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              backgroundColor: '#2563eb',
-              color: 'white',
-              padding: '0.75rem 2rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              fontSize: '1rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
+    return <ErrorMessage error={userError} title="Error Loading Dashboard" onRetry={() => window.location.reload()} />;
   }
 
   // Main dashboard content
   return (
-    <>
-      <Navigation currentUser={user} />
-      <main
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '2rem 1rem',
-        }}
-      >
+    <PageLayout currentUser={user}>
         <div style={{ marginBottom: '2rem' }}>
           <h1
             style={{
@@ -342,7 +247,6 @@ function Dashboard() {
             </p>
           </div>
         </div>
-      </main>
-    </>
+    </PageLayout>
   );
 }
