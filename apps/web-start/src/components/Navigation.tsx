@@ -1,4 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router';
+import { ROUTES } from '../config/routes';
+import { COLORS } from '../config/constants';
 import type { User } from '../types/api';
 
 interface NavigationProps {
@@ -16,7 +18,7 @@ export default function Navigation({ currentUser }: NavigationProps) {
   return (
     <nav
       style={{
-        backgroundColor: '#2563eb',
+        backgroundColor: COLORS.primary[500],
         color: 'white',
         padding: '1rem',
       }}
@@ -38,7 +40,7 @@ export default function Navigation({ currentUser }: NavigationProps) {
           }}
         >
           <Link
-            to="/"
+            to={ROUTES.home}
             style={{
               fontSize: '1.25rem',
               fontWeight: 'bold',
@@ -51,11 +53,11 @@ export default function Navigation({ currentUser }: NavigationProps) {
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Link
-              to="/"
+              to={ROUTES.home}
               style={{
                 padding: '0.5rem 0.75rem',
                 borderRadius: '0.25rem',
-                backgroundColor: isActive('/') ? '#1d4ed8' : 'transparent',
+                backgroundColor: isActive(ROUTES.home) ? COLORS.primary[600] : 'transparent',
                 color: 'white',
                 textDecoration: 'none',
                 transition: 'background-color 0.2s',
@@ -65,12 +67,12 @@ export default function Navigation({ currentUser }: NavigationProps) {
             </Link>
 
             <Link
-              to="/courses"
+              to={ROUTES.courses}
               style={{
                 padding: '0.5rem 0.75rem',
                 borderRadius: '0.25rem',
-                backgroundColor: isActive('/courses')
-                  ? '#1d4ed8'
+                backgroundColor: isActive(ROUTES.courses)
+                  ? COLORS.primary[600]
                   : 'transparent',
                 color: 'white',
                 textDecoration: 'none',
@@ -81,12 +83,12 @@ export default function Navigation({ currentUser }: NavigationProps) {
             </Link>
 
             <Link
-              to="/profile"
+              to={ROUTES.profile}
               style={{
                 padding: '0.5rem 0.75rem',
                 borderRadius: '0.25rem',
-                backgroundColor: isActive('/profile')
-                  ? '#1d4ed8'
+                backgroundColor: isActive(ROUTES.profile)
+                  ? COLORS.primary[600]
                   : 'transparent',
                 color: 'white',
                 textDecoration: 'none',
@@ -97,11 +99,11 @@ export default function Navigation({ currentUser }: NavigationProps) {
             </Link>
 
             <Link
-              to="/users"
+              to={ROUTES.users}
               style={{
                 padding: '0.5rem 0.75rem',
                 borderRadius: '0.25rem',
-                backgroundColor: isActive('/users') ? '#1d4ed8' : 'transparent',
+                backgroundColor: isActive(ROUTES.users) ? COLORS.primary[600] : 'transparent',
                 color: 'white',
                 textDecoration: 'none',
                 transition: 'background-color 0.2s',
