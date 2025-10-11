@@ -52,7 +52,7 @@ function CourseDetailPage() {
     );
   }
 
-  const assignments = course.assignments || [];
+  const assignments = course.assignments;
   const totalAssignments = assignments.length;
   const reflectionCount = assignments.filter(
     (a) => a.type === 'REFLECTION',

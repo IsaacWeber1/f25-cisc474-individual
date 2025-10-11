@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
 import Navigation from '../Navigation';
+import type { ReactNode } from 'react';
 import type { User } from '../../types/api';
 
 interface PageLayoutProps {

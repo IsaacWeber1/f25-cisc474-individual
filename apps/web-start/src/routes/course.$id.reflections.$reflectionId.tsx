@@ -50,7 +50,7 @@ function ReflectionDetailPage() {
     );
   }
 
-  const submission = reflection.submissions?.find(
+  const submission = reflection.submissions.find(
     (s) => s.studentId === currentUserId,
   );
   const grade = allGrades?.find((g) => g.submissionId === submission?.id);

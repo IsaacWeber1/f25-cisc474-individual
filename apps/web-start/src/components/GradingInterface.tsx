@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { COLORS, TYPOGRAPHY, API_ENDPOINTS } from '../config/constants';
+import { API_ENDPOINTS, COLORS, TYPOGRAPHY } from '../config/constants';
 
 interface Grade {
   id: string;
@@ -16,7 +16,7 @@ interface Submission {
   status: 'DRAFT' | 'SUBMITTED' | 'GRADED' | 'LATE';
   submittedAt: Date | null;
   content: string | null;
-  files: File[] | null;
+  files: Array<File> | null;
 }
 
 interface Assignment {
@@ -42,7 +42,7 @@ export default function GradingInterface({
   currentUserId,
   onGradeUpdate,
 }: GradingInterfaceProps) {
-  const [score, setScore] = useState(grade?.score?.toString() || '');
+  const [score, setScore] = useState(grade?.score.toString() || '');
   const [feedback, setFeedback] = useState(grade?.feedback || '');
   const queryClient = useQueryClient();
 
@@ -86,7 +86,7 @@ export default function GradingInterface({
     },
   });
 
-  const handleSubmitGrade = async () => {
+  const handleSubmitGrade = () => {
     const scoreNum = parseFloat(score);
     if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > assignment.maxPoints) {
       alert(`Score must be between 0 and ${assignment.maxPoints}`);

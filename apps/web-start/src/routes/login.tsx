@@ -33,7 +33,7 @@ function LoginPage() {
         allUsers.find((u) =>
           u.enrollments.some((e) => e.role === 'PROFESSOR'),
         ),
-      ].filter(Boolean) as User[]
+      ].filter(Boolean) as Array<User>
     : [];
 
   const handleLogin = () => {

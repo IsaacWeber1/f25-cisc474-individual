@@ -50,7 +50,7 @@ function AssignmentDetailPage() {
     );
   }
 
-  const submission = assignment.submissions?.find(
+  const submission = assignment.submissions.find(
     (s) => s.studentId === currentUserId,
   );
   const grade = allGrades?.find((g) => g.submissionId === submission?.id);
@@ -258,7 +258,7 @@ function AssignmentDetailPage() {
         </div>
 
         {/* Instructions */}
-        {assignment.instructions && (
+        {assignment.instructions.length > 0 && (
           <div
             style={{
               backgroundColor: 'white',
