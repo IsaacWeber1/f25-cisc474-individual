@@ -42,7 +42,7 @@ function ReflectionsPage() {
     course?.assignments.filter((a) => a.type === 'REFLECTION') || [];
 
   const getReflectionStatus = (assignment: Assignment) => {
-    const submission = assignment.submissions.find(
+    const submission = assignment.submissions?.find(
       (s) => s.studentId === currentUserId,
     );
 
@@ -116,7 +116,7 @@ function ReflectionsPage() {
                 const dueDate = new Date(reflection.dueDate);
                 const isOverdue = dueDate < new Date();
                 const status = getReflectionStatus(reflection);
-                const submission = reflection.submissions.find(
+                const submission = reflection.submissions?.find(
                   (s) => s.studentId === currentUserId,
                 );
                 const grade = allGrades?.find(

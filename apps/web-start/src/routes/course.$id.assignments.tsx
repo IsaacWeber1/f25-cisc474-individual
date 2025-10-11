@@ -49,7 +49,7 @@ function AssignmentsPage() {
 
   // Helper to get assignment status for current user
   const getAssignmentStatus = (assignment: Assignment) => {
-    const submission = assignment.submissions.find(
+    const submission = assignment.submissions?.find(
       (s) => s.studentId === currentUserId,
     );
 
@@ -143,7 +143,7 @@ function AssignmentsPage() {
               const typeStyle = getTypeColor(assignment.type);
 
               // Get grade if exists
-              const submission = assignment.submissions.find(
+              const submission = assignment.submissions?.find(
                 (s) => s.studentId === currentUserId,
               );
               const grade = allGrades?.find(
