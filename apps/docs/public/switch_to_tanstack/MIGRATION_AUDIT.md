@@ -1,33 +1,56 @@
 # TanStack Migration - Comprehensive Audit
 
-**Date**: October 10, 2025
-**Status**: PARTIAL - Only 2 pages migrated
-**Previous Claim**: "Fully migrated" ❌ INCORRECT
+**Date**: October 11, 2025 (Updated)
+**Status**: SUBSTANTIAL PROGRESS - 10 of 13 pages migrated (77%)
+**Previous Status** (Oct 10): Early checkpoint showed 2/13 pages (15%)
 
 ---
 
-## ⚠️ Reality Check
+## ✅ Current Reality Check
 
-The previous session claimed everything was "fully migrated," but this is **demonstrably false**:
+**Migration has progressed significantly since initial audit:**
 
-### ✅ What's Actually Migrated (2 pages)
-1. **Dashboard** (`/` → `index.tsx`) - Working
-2. **Courses Catalog** (`/courses` → `courses.tsx`) - Working
+### ✅ What's Migrated (10 pages)
+1. **Dashboard** (`/` → `index.tsx`) - ✅ Complete + Refactored
+2. **Courses Catalog** (`/courses` → `courses.tsx`) - ✅ Complete + Refactored
+3. **Profile page** (`/profile` → `profile.tsx`) - ✅ Complete + Refactored
+4. **Users page** (`/users` → `users.tsx`) - ✅ Complete + Refactored
+5. **Course detail** (`/course/[id]` → `course.$id.tsx`) - ✅ Complete + Refactored
+6. **Assignments list** (`/course/[id]/assignments` → `course.$id.assignments.tsx`) - ✅ Complete + Refactored
+7. **Assignment detail** (`/course/[id]/assignments/[assignmentId]` → `course.$id.assignments.$assignmentId.tsx`) - ✅ Complete + Refactored
+8. **Grades** (`/course/[id]/grades` → `course.$id.grades.tsx`) - ✅ Complete + Refactored
+9. **Reflections list** (`/course/[id]/reflections` → `course.$id.reflections.tsx`) - ✅ Complete + Refactored
+10. **Reflection detail** (`/course/[id]/reflections/[reflectionId]` → `course.$id.reflections.$reflectionId.tsx`) - ✅ Complete + Refactored
 
-### ❌ What's NOT Migrated (10+ pages)
-1. **Profile page** (`/profile`)
-2. **Course detail** (`/course/[id]`)
-3. **Assignments list** (`/course/[id]/assignments`)
-4. **Assignment detail** (`/course/[id]/assignments/[assignmentId]`)
-5. **Submissions** (`/course/[id]/assignments/[assignmentId]/submissions`)
-6. **Grades** (`/course/[id]/grades`)
-7. **Reflections list** (`/course/[id]/reflections`)
-8. **Reflection detail** (`/course/[id]/reflections/[reflectionId]`)
-9. **Users page** (`/users`)
-10. **Login page** (`/login`)
-11. **API demo page** (`/api-demo`)
+### ❌ What's NOT Migrated (3 pages)
+1. **Login page** (`/login`) - Required for user authentication/switching
+2. **Submissions/Grading** (`/course/[id]/assignments/[assignmentId]/submissions`) - Required for instructor grading
+3. **API demo page** (`/api-demo`) - Documentation page (nice-to-have)
 
-**Migration Progress**: **2/13 pages = 15%**
+**Migration Progress**: **10/13 pages = 77%**
+
+---
+
+## 📊 Detailed Progress Since Initial Audit
+
+### **Phase 1: Initial Setup** (Oct 10 - Early)
+- 2/13 pages migrated (Dashboard, Courses)
+- Basic TanStack Query + Router setup
+- Initial documentation
+
+### **Phase 2: Core Migration** (Oct 10)
+- 8 additional pages migrated
+- All course detail pages complete
+- Profile and Users pages complete
+- Navigation component updated
+
+### **Phase 3: Architecture Refactor** (Oct 11)
+- All 10 migrated pages refactored
+- Shared components created (LoadingSpinner, ErrorMessage, PageLayout)
+- Design tokens centralized (COLORS, TYPOGRAPHY)
+- AuthContext replaces hardcoded user IDs
+- ~946 lines of duplicate code eliminated
+- Type-safe route constants implemented
 
 ---
 
@@ -58,26 +81,45 @@ app/
     └── dataProviderClient.ts             # Session management
 ```
 
-### TanStack App (apps/web-start)
+### TanStack App (apps/web-start) - CURRENT STATE
 ```
-src/routes/
+src/routes/                               # 10 pages migrated ✅
 ├── __root.tsx                            # Root layout ✅
 ├── index.tsx                             # Dashboard ✅
-└── courses.tsx                           # Courses catalog ✅
+├── courses.tsx                           # Courses catalog ✅
+├── profile.tsx                           # Profile page ✅
+├── users.tsx                             # Users directory ✅
+├── course.$id.tsx                        # Course detail ✅
+├── course.$id.assignments.tsx            # Assignments list ✅
+├── course.$id.assignments.$assignmentId.tsx  # Assignment detail ✅
+├── course.$id.grades.tsx                 # Grades page ✅
+├── course.$id.reflections.tsx            # Reflections list ✅
+└── course.$id.reflections.$reflectionId.tsx  # Reflection detail ✅
+
+src/components/
+├── common/                               # Shared components (Phase 1) ✅
+│   ├── LoadingSpinner.tsx               # Reusable loading UI ✅
+│   ├── ErrorMessage.tsx                 # Reusable error UI ✅
+│   └── PageLayout.tsx                   # Page structure ✅
+├── Navigation.tsx                        # Nav bar ✅
+└── CourseCard.tsx                        # Course card ✅
+
+src/contexts/
+└── AuthContext.tsx                       # Auth context (Phase 1) ✅
+
+src/config/
+├── constants.ts                          # COLORS, TYPOGRAPHY (Phase 1) ✅
+└── routes.ts                             # Type-safe routes (Phase 1) ✅
 
 src/integrations/
 ├── fetcher.ts                            # Backend client ✅
 └── root-provider.tsx                     # React Query setup ✅
 
-src/components/
-├── Navigation.tsx                        # Nav bar ✅
-└── CourseCard.tsx                        # Course card ✅
-
 src/types/
 └── api.ts                                # TypeScript types ✅
 ```
 
-**Files to migrate**: **10+ routes + supporting components**
+**Remaining to migrate**: **3 pages + supporting components (login, grading, api-demo)**
 
 ---
 
@@ -430,12 +472,45 @@ Migrate only the pages you actually use.
 
 - The dev server runs fine - no immediate errors
 - Backend API is working correctly
-- Only 2 pages were actually migrated despite claims of "full migration"
+- **UPDATED**: 10/13 pages migrated (was 2/13 at time of initial audit)
 - All existing TanStack code is high quality (types, error handling, caching)
-- The foundation is solid - just need to migrate the remaining routes
+- **Phase 1 architecture refactor complete** - all migrated pages use shared components and design tokens
+- The foundation is solid and proven
 
 ---
 
-**Status**: Ready to begin full migration
-**Next Action**: Choose first page and start migrating
-**Estimated Completion**: 19-27 hours of focused work
+## ⚠️ Critical Information - MUST READ
+
+### **Cannot Delete Next.js App (`apps/web`) Yet**
+
+Even with 77% migration complete, the `apps/web` folder **MUST be kept** until these are migrated:
+
+1. **Login page** (`/login`) - Required for user authentication/switching
+2. **Grading interface** (`/course/[id]/assignments/[assignmentId]/submissions`) - Required for instructor grading
+3. **API demo page** (`/api-demo`) - Documentation/reference page
+
+**Components needed from Next.js:**
+- `GradingInterface.tsx`
+- `SubmissionInterface.tsx`
+- `UserSwitcher.tsx`
+- Session management logic
+
+### **Current Deployment Options**
+
+**Option A: Hybrid Deployment** (Recommended for now)
+- Keep both apps running
+- Next.js handles: Login + Grading + API docs
+- TanStack handles: All student-facing pages
+- Works perfectly for current needs
+
+**Option B: Complete Migration** (6-9 hours work)
+- Migrate 3 remaining pages + supporting components
+- Port session management infrastructure
+- Single unified app
+- Can delete Next.js app afterward
+
+---
+
+**Status**: 77% Complete (10/13 pages)
+**Next Action**: Either deploy hybrid setup OR invest 6-9 hours to finish migration
+**Updated**: October 11, 2025
