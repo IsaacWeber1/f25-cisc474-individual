@@ -2,7 +2,11 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Course, User } from '../types/api';
 
 export const Route = createFileRoute('/course/$id')({
@@ -35,103 +39,16 @@ function CourseDetailPage() {
     'STUDENT';
 
   if (isLoading) {
-    return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                width: '3rem',
-                height: '3rem',
-                border: '4px solid #e5e7eb',
-                borderTopColor: '#2563eb',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <p
-              style={{
-                marginTop: '1rem',
-                color: '#6b7280',
-                fontSize: '1.125rem',
-              }}
-            >
-              Loading course...
-            </p>
-            <style>{`
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        </div>
-      </>
-    );
+    return <LoadingSpinner message="Loading course..." />;
   }
 
   if (error || !course) {
     return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              padding: '3rem',
-              borderRadius: '0.75rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              maxWidth: '600px',
-              textAlign: 'center',
-            }}
-          >
-            <h1
-              style={{
-                fontSize: '2rem',
-                marginBottom: '1rem',
-                color: '#dc2626',
-              }}
-            >
-              Error Loading Course
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-              {error instanceof Error ? error.message : 'Course not found'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </>
+      <ErrorMessage
+        error={error || new Error('Course not found')}
+        title="Error Loading Course"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -150,15 +67,7 @@ function CourseDetailPage() {
   ).length;
 
   return (
-    <>
-      <Navigation currentUser={currentUser || null} />
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '2rem 1rem',
-        }}
-      >
+    <PageLayout currentUser={currentUser}>
         {/* Course Header */}
         <div
           style={{
@@ -180,26 +89,26 @@ function CourseDetailPage() {
             <div>
               <h1
                 style={{
-                  fontSize: '2rem',
-                  fontWeight: 'bold',
-                  color: '#111827',
+                  fontSize: TYPOGRAPHY.sizes['4xl'],
+                  fontWeight: TYPOGRAPHY.weights.bold,
+                  color: COLORS.gray[900],
                   marginBottom: '0.5rem',
                 }}
               >
                 {course.code}: {course.title}
               </h1>
-              <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>
+              <p style={{ color: COLORS.gray[600], fontSize: TYPOGRAPHY.sizes.lg }}>
                 {course.instructor} • {course.semester}
               </p>
             </div>
             <span
               style={{
-                fontSize: '0.875rem',
-                backgroundColor: '#dcfce7',
-                color: '#15803d',
+                fontSize: TYPOGRAPHY.sizes.sm,
+                backgroundColor: COLORS.success[100],
+                color: COLORS.success[500],
                 padding: '0.5rem 1rem',
                 borderRadius: '1rem',
-                fontWeight: 500,
+                fontWeight: TYPOGRAPHY.weights.medium,
               }}
             >
               {userRole}
@@ -209,8 +118,8 @@ function CourseDetailPage() {
           {course.description && (
             <p
               style={{
-                fontSize: '1.125rem',
-                color: '#4b5563',
+                fontSize: TYPOGRAPHY.sizes.lg,
+                color: COLORS.gray[600],
                 lineHeight: 1.6,
                 marginBottom: '1.5rem',
               }}
@@ -232,22 +141,22 @@ function CourseDetailPage() {
               style={{
                 textAlign: 'center',
                 padding: '1rem',
-                backgroundColor: '#dbeafe',
-                border: '1px solid #bfdbfe',
+                backgroundColor: COLORS.primary[100],
+                border: `1px solid ${COLORS.primary[100]}`,
                 borderRadius: '0.5rem',
               }}
             >
               <div
                 style={{
-                  fontSize: '2rem',
-                  fontWeight: 'bold',
-                  color: '#1e40af',
+                  fontSize: TYPOGRAPHY.sizes['4xl'],
+                  fontWeight: TYPOGRAPHY.weights.bold,
+                  color: COLORS.primary[700],
                   marginBottom: '0.25rem',
                 }}
               >
                 {totalAssignments}
               </div>
-              <div style={{ color: '#1e40af', fontWeight: 500 }}>
+              <div style={{ color: COLORS.primary[700], fontWeight: TYPOGRAPHY.weights.medium }}>
                 Assignments
               </div>
             </div>
@@ -256,22 +165,22 @@ function CourseDetailPage() {
               style={{
                 textAlign: 'center',
                 padding: '1rem',
-                backgroundColor: '#dcfce7',
-                border: '1px solid #bbf7d0',
+                backgroundColor: COLORS.success[100],
+                border: `1px solid ${COLORS.success[100]}`,
                 borderRadius: '0.5rem',
               }}
             >
               <div
                 style={{
-                  fontSize: '2rem',
-                  fontWeight: 'bold',
-                  color: '#15803d',
+                  fontSize: TYPOGRAPHY.sizes['4xl'],
+                  fontWeight: TYPOGRAPHY.weights.bold,
+                  color: COLORS.success[500],
                   marginBottom: '0.25rem',
                 }}
               >
                 {reflectionCount}
               </div>
-              <div style={{ color: '#15803d', fontWeight: 500 }}>
+              <div style={{ color: COLORS.success[500], fontWeight: TYPOGRAPHY.weights.medium }}>
                 Reflections
               </div>
             </div>
@@ -280,44 +189,44 @@ function CourseDetailPage() {
               style={{
                 textAlign: 'center',
                 padding: '1rem',
-                backgroundColor: '#f3e8ff',
-                border: '1px solid #e9d5ff',
+                backgroundColor: COLORS.purple[100],
+                border: `1px solid ${COLORS.purple[200]}`,
                 borderRadius: '0.5rem',
               }}
             >
               <div
                 style={{
-                  fontSize: '2rem',
-                  fontWeight: 'bold',
-                  color: '#7c3aed',
+                  fontSize: TYPOGRAPHY.sizes['4xl'],
+                  fontWeight: TYPOGRAPHY.weights.bold,
+                  color: COLORS.purple[500],
                   marginBottom: '0.25rem',
                 }}
               >
                 {studentCount}
               </div>
-              <div style={{ color: '#7c3aed', fontWeight: 500 }}>Students</div>
+              <div style={{ color: COLORS.purple[500], fontWeight: TYPOGRAPHY.weights.medium }}>Students</div>
             </div>
 
             <div
               style={{
                 textAlign: 'center',
                 padding: '1rem',
-                backgroundColor: '#fef3c7',
-                border: '1px solid #fcd34d',
+                backgroundColor: COLORS.warning[100],
+                border: `1px solid ${COLORS.warning[100]}`,
                 borderRadius: '0.5rem',
               }}
             >
               <div
                 style={{
-                  fontSize: '2rem',
-                  fontWeight: 'bold',
-                  color: '#d97706',
+                  fontSize: TYPOGRAPHY.sizes['4xl'],
+                  fontWeight: TYPOGRAPHY.weights.bold,
+                  color: COLORS.warning[500],
                   marginBottom: '0.25rem',
                 }}
               >
                 {staffCount}
               </div>
-              <div style={{ color: '#d97706', fontWeight: 500 }}>Staff</div>
+              <div style={{ color: COLORS.warning[500], fontWeight: TYPOGRAPHY.weights.medium }}>Staff</div>
             </div>
           </div>
         </div>
@@ -331,8 +240,7 @@ function CourseDetailPage() {
           }}
         >
           <Link
-            to="/course/$id/assignments"
-            params={{ id: courseId }}
+            to={ROUTES.courseAssignments(courseId)}
             style={{
               backgroundColor: 'white',
               borderRadius: '0.75rem',
@@ -345,22 +253,21 @@ function CourseDetailPage() {
           >
             <h3
               style={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                color: '#2563eb',
+                fontSize: TYPOGRAPHY.sizes.xl,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.primary[500],
                 marginBottom: '0.5rem',
               }}
             >
               📝 Assignments
             </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            <p style={{ color: COLORS.gray[600], fontSize: TYPOGRAPHY.sizes.sm }}>
               View and submit course assignments
             </p>
           </Link>
 
           <Link
-            to="/course/$id/grades"
-            params={{ id: courseId }}
+            to={ROUTES.courseGrades(courseId)}
             style={{
               backgroundColor: 'white',
               borderRadius: '0.75rem',
@@ -373,22 +280,21 @@ function CourseDetailPage() {
           >
             <h3
               style={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                color: '#059669',
+                fontSize: TYPOGRAPHY.sizes.xl,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.success[600],
                 marginBottom: '0.5rem',
               }}
             >
               📊 Grades
             </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            <p style={{ color: COLORS.gray[600], fontSize: TYPOGRAPHY.sizes.sm }}>
               View your grades and feedback
             </p>
           </Link>
 
           <Link
-            to="/course/$id/reflections"
-            params={{ id: courseId }}
+            to={ROUTES.courseReflections(courseId)}
             style={{
               backgroundColor: 'white',
               borderRadius: '0.75rem',
@@ -401,21 +307,21 @@ function CourseDetailPage() {
           >
             <h3
               style={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                color: '#7c3aed',
+                fontSize: TYPOGRAPHY.sizes.xl,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.purple[500],
                 marginBottom: '0.5rem',
               }}
             >
               💭 Reflections
             </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            <p style={{ color: COLORS.gray[600], fontSize: TYPOGRAPHY.sizes.sm }}>
               Complete course reflections
             </p>
           </Link>
 
           <Link
-            to="/"
+            to={ROUTES.home}
             style={{
               backgroundColor: 'white',
               borderRadius: '0.75rem',
@@ -428,15 +334,15 @@ function CourseDetailPage() {
           >
             <h3
               style={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                color: '#d97706',
+                fontSize: TYPOGRAPHY.sizes.xl,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.warning[500],
                 marginBottom: '0.5rem',
               }}
             >
               🏠 Dashboard
             </h3>
-            <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            <p style={{ color: COLORS.gray[600], fontSize: TYPOGRAPHY.sizes.sm }}>
               Return to dashboard
             </p>
           </Link>
@@ -455,9 +361,9 @@ function CourseDetailPage() {
           >
             <h2
               style={{
-                fontSize: '1.5rem',
-                fontWeight: 600,
-                color: '#111827',
+                fontSize: TYPOGRAPHY.sizes['2xl'],
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.gray[900],
                 marginBottom: '1.5rem',
               }}
             >
@@ -471,13 +377,12 @@ function CourseDetailPage() {
                 return (
                   <Link
                     key={assignment.id}
-                    to="/course/$id/assignments/$assignmentId"
-                    params={{ id: courseId, assignmentId: assignment.id }}
+                    to={ROUTES.courseAssignment(courseId, assignment.id)}
                     style={{
                       display: 'block',
                       padding: '1.5rem',
-                      backgroundColor: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: COLORS.gray[50],
+                      border: `1px solid ${COLORS.gray[200]}`,
                       borderRadius: '0.5rem',
                       textDecoration: 'none',
                       transition: 'all 0.2s',
@@ -493,9 +398,9 @@ function CourseDetailPage() {
                       <div>
                         <h3
                           style={{
-                            fontSize: '1.125rem',
-                            fontWeight: 600,
-                            color: '#111827',
+                            fontSize: TYPOGRAPHY.sizes.lg,
+                            fontWeight: TYPOGRAPHY.weights.semibold,
+                            color: COLORS.gray[900],
                             marginBottom: '0.5rem',
                           }}
                         >
@@ -503,8 +408,8 @@ function CourseDetailPage() {
                         </h3>
                         <p
                           style={{
-                            fontSize: '0.875rem',
-                            color: '#6b7280',
+                            fontSize: TYPOGRAPHY.sizes.sm,
+                            color: COLORS.gray[600],
                             marginBottom: '0.5rem',
                           }}
                         >
@@ -512,8 +417,8 @@ function CourseDetailPage() {
                         </p>
                         <p
                           style={{
-                            fontSize: '0.75rem',
-                            color: isOverdue ? '#dc2626' : '#6b7280',
+                            fontSize: TYPOGRAPHY.sizes.xs,
+                            color: isOverdue ? COLORS.error[600] : COLORS.gray[600],
                           }}
                         >
                           Due: {dueDate.toLocaleDateString()} at{' '}
@@ -533,31 +438,31 @@ function CourseDetailPage() {
                       >
                         <span
                           style={{
-                            fontSize: '0.75rem',
+                            fontSize: TYPOGRAPHY.sizes.xs,
                             backgroundColor:
                               assignment.type === 'REFLECTION'
-                                ? '#f3e8ff'
+                                ? COLORS.purple[100]
                                 : assignment.type === 'FILE'
-                                  ? '#dbeafe'
-                                  : '#dcfce7',
+                                  ? COLORS.primary[100]
+                                  : COLORS.success[100],
                             color:
                               assignment.type === 'REFLECTION'
-                                ? '#7c3aed'
+                                ? COLORS.purple[500]
                                 : assignment.type === 'FILE'
-                                  ? '#2563eb'
-                                  : '#15803d',
+                                  ? COLORS.primary[500]
+                                  : COLORS.success[500],
                             padding: '0.25rem 0.75rem',
                             borderRadius: '1rem',
-                            fontWeight: 500,
+                            fontWeight: TYPOGRAPHY.weights.medium,
                           }}
                         >
                           {assignment.type}
                         </span>
                         <span
                           style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            color: '#6b7280',
+                            fontSize: TYPOGRAPHY.sizes.sm,
+                            fontWeight: TYPOGRAPHY.weights.semibold,
+                            color: COLORS.gray[600],
                           }}
                         >
                           {assignment.maxPoints} pts
@@ -570,7 +475,6 @@ function CourseDetailPage() {
             </div>
           </div>
         )}
-      </div>
-    </>
+    </PageLayout>
   );
 }
