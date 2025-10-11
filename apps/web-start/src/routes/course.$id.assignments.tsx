@@ -283,7 +283,7 @@ function AssignmentsPage() {
                   </div>
 
                   {/* Instructions preview */}
-                  {assignment.instructions.length > 0 && (
+                  {assignment.instructions && assignment.instructions.length > 0 && (
                     <div
                       style={{
                         marginTop: '1rem',
