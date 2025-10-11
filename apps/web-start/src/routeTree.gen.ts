@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as ApiDemoRouteImport } from './routes/api-demo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CourseIdRouteImport } from './routes/course.$id'
 import { Route as CourseIdReflectionsRouteImport } from './routes/course.$id.reflections'
@@ -33,6 +34,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDemoRoute = ApiDemoRouteImport.update({
+  id: '/api-demo',
+  path: '/api-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -75,6 +81,7 @@ const CourseIdAssignmentsAssignmentIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api-demo'
     | '/courses'
     | '/profile'
     | '/users'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api-demo'
     | '/courses'
     | '/profile'
     | '/users'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/api-demo'
     | '/courses'
     | '/profile'
     | '/users'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiDemoRoute: typeof ApiDemoRoute
   CoursesRoute: typeof CoursesRoute
   ProfileRoute: typeof ProfileRoute
   UsersRoute: typeof UsersRoute
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/courses'
       fullPath: '/courses'
       preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-demo': {
+      id: '/api-demo'
+      path: '/api-demo'
+      fullPath: '/api-demo'
+      preLoaderRoute: typeof ApiDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -272,6 +292,7 @@ const CourseIdRouteWithChildren = CourseIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiDemoRoute: ApiDemoRoute,
   CoursesRoute: CoursesRoute,
   ProfileRoute: ProfileRoute,
   UsersRoute: UsersRoute,
