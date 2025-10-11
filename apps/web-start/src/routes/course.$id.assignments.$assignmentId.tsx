@@ -2,7 +2,11 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Grade, User } from '../types/api';
 
 export const Route = createFileRoute('/course/$id/assignments/$assignmentId')({
@@ -33,104 +37,16 @@ function AssignmentDetailPage() {
   });
 
   if (isLoading) {
-    return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                width: '3rem',
-                height: '3rem',
-                border: '4px solid #e5e7eb',
-                borderTopColor: '#2563eb',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <p
-              style={{
-                marginTop: '1rem',
-                color: '#6b7280',
-                fontSize: '1.125rem',
-              }}
-            >
-              Loading assignment...
-            </p>
-            <style>{`
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        </div>
-      </>
-    );
+    return <LoadingSpinner message="Loading assignment..." />;
   }
 
   if (error || !assignment) {
     return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              padding: '3rem',
-              borderRadius: '0.75rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              maxWidth: '600px',
-              textAlign: 'center',
-            }}
-          >
-            <h1
-              style={{
-                fontSize: '2rem',
-                marginBottom: '1rem',
-                color: '#dc2626',
-              }}
-            >
-              Error Loading Assignment
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-              {error instanceof Error ? error.message : 'Assignment not found'}
-            </p>
-            <Link
-              to="/course/$id/assignments"
-              params={{ id: courseId }}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-                display: 'inline-block',
-              }}
-            >
-              Back to Assignments
-            </Link>
-          </div>
-        </div>
-      </>
+      <ErrorMessage
+        error={error || new Error('Assignment not found')}
+        title="Error Loading Assignment"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -144,44 +60,39 @@ function AssignmentDetailPage() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'REFLECTION':
-        return { color: '#7c3aed', bg: '#f3e8ff' };
+        return { color: COLORS.purple[500], bg: COLORS.purple[100] };
       case 'FILE':
-        return { color: '#2563eb', bg: '#dbeafe' };
+        return { color: COLORS.primary[500], bg: COLORS.primary[100] };
       case 'TEXT':
-        return { color: '#15803d', bg: '#dcfce7' };
+        return { color: COLORS.success[500], bg: COLORS.success[100] };
       default:
-        return { color: '#6b7280', bg: '#f3f4f6' };
+        return { color: COLORS.gray[600], bg: COLORS.gray[100] };
     }
   };
 
   const getStatusInfo = () => {
     if (!submission)
-      return { status: 'Not Submitted', color: '#dc2626', bg: '#fef2f2' };
-    if (grade) return { status: 'Graded', color: '#15803d', bg: '#dcfce7' };
-    return { status: 'Submitted', color: '#d97706', bg: '#fef3c7' };
+      return { status: 'Not Submitted', color: COLORS.error[600], bg: COLORS.error[200] };
+    if (grade) return { status: 'Graded', color: COLORS.success[500], bg: COLORS.success[100] };
+    return { status: 'Submitted', color: COLORS.warning[500], bg: COLORS.warning[100] };
   };
 
   const typeColor = getTypeColor(assignment.type);
   const statusInfo = getStatusInfo();
 
   return (
-    <>
-      <Navigation currentUser={currentUser || null} />
-      <div
-        style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}
-      >
+    <PageLayout currentUser={currentUser}>
         {/* Breadcrumbs */}
         <div
           style={{
             marginBottom: '2rem',
-            fontSize: '0.875rem',
-            color: '#6b7280',
+            fontSize: TYPOGRAPHY.sizes.sm,
+            color: COLORS.gray[600],
           }}
         >
           <Link
-            to="/course/$id/assignments"
-            params={{ id: courseId }}
-            style={{ color: '#2563eb', textDecoration: 'none' }}
+            to={ROUTES.courseAssignments(courseId)}
+            style={{ color: COLORS.primary[500], textDecoration: 'none' }}
           >
             ← Back to Assignments
           </Link>
@@ -534,7 +445,6 @@ function AssignmentDetailPage() {
             </p>
           </div>
         )}
-      </div>
-    </>
+    </PageLayout>
   );
 }
