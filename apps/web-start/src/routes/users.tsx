@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
@@ -77,7 +77,7 @@ function UsersPage() {
         >
           {users.map((user) => {
             const roleStyle = getRoleBadgeStyle(
-              user.enrollments[0]?.role || 'STUDENT',
+              user.enrollments[0] ? user.enrollments[0].role : 'STUDENT',
             );
 
             return (
@@ -129,7 +129,7 @@ function UsersPage() {
                         fontWeight: TYPOGRAPHY.weights.medium,
                       }}
                     >
-                      {user.enrollments[0]?.role || 'STUDENT'}
+                      {user.enrollments[0] ? user.enrollments[0].role : 'STUDENT'}
                     </span>
                   </div>
                 </div>
@@ -138,7 +138,7 @@ function UsersPage() {
                   <div style={{ marginBottom: '0.25rem' }}>{user.email}</div>
                   <div>
                     Courses: {user.enrollments.length} • Submissions:{' '}
-                    {user.submissions?.length || 0}
+                    {user.submissions.length}
                   </div>
                 </div>
 

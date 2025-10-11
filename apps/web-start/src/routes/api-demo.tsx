@@ -1,9 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import type { User } from '../types/api';
 

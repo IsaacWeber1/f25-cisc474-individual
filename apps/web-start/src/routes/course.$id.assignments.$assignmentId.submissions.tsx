@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
@@ -78,12 +78,12 @@ function SubmissionsPage() {
   }
 
   // Get submitted submissions
-  const submissions = assignment.submissions?.filter(
+  const submissions = assignment.submissions.filter(
     (s) => s.status === 'SUBMITTED',
-  ) || [];
+  );
 
   // Create grade map
-  const gradeMap: Record<string, Grade> = {};
+  const gradeMap: Record<string, Grade | undefined> = {};
   if (allGrades) {
     allGrades.forEach((grade) => {
       gradeMap[grade.submissionId] = grade;
