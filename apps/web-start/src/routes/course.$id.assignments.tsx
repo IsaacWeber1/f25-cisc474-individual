@@ -4,7 +4,6 @@ import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Course, Grade, User } from '../types/api';
@@ -49,7 +48,7 @@ function AssignmentsPage() {
 
   // Helper to get assignment status for current user
   const getAssignmentStatus = (assignment: Assignment) => {
-    const submission = assignment.submissions.find(
+    const submission = assignment.submissions?.find(
       (s) => s.studentId === currentUserId,
     );
 
@@ -103,7 +102,7 @@ function AssignmentsPage() {
   );
 
   return (
-    <PageLayout currentUser={currentUser}>
+    <div style={{ padding: '2rem', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <Link
@@ -143,7 +142,7 @@ function AssignmentsPage() {
               const typeStyle = getTypeColor(assignment.type);
 
               // Get grade if exists
-              const submission = assignment.submissions.find(
+              const submission = assignment.submissions?.find(
                 (s) => s.studentId === currentUserId,
               );
               const grade = allGrades?.find(
@@ -283,7 +282,7 @@ function AssignmentsPage() {
                   </div>
 
                   {/* Instructions preview */}
-                  {assignment.instructions.length > 0 && (
+                  {assignment.instructions && assignment.instructions.length > 0 && (
                     <div
                       style={{
                         marginTop: '1rem',
@@ -339,6 +338,6 @@ function AssignmentsPage() {
             </p>
           </div>
         )}
-    </PageLayout>
+    </div>
   );
 }

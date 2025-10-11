@@ -4,7 +4,6 @@ import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Course, Grade, User } from '../types/api';
@@ -42,7 +41,7 @@ function ReflectionsPage() {
     course?.assignments.filter((a) => a.type === 'REFLECTION') || [];
 
   const getReflectionStatus = (assignment: Assignment) => {
-    const submission = assignment.submissions.find(
+    const submission = assignment.submissions?.find(
       (s) => s.studentId === currentUserId,
     );
 
@@ -74,7 +73,7 @@ function ReflectionsPage() {
   }
 
   return (
-    <PageLayout currentUser={currentUser}>
+    <div style={{ padding: '2rem', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <Link
@@ -116,7 +115,7 @@ function ReflectionsPage() {
                 const dueDate = new Date(reflection.dueDate);
                 const isOverdue = dueDate < new Date();
                 const status = getReflectionStatus(reflection);
-                const submission = reflection.submissions.find(
+                const submission = reflection.submissions?.find(
                   (s) => s.studentId === currentUserId,
                 );
                 const grade = allGrades?.find(
@@ -286,6 +285,6 @@ function ReflectionsPage() {
             </p>
           </div>
         )}
-    </PageLayout>
+    </div>
   );
 }

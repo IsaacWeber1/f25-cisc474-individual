@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, Outlet, createFileRoute, useMatches } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,14 @@ export const Route = createFileRoute('/course/$id')({
 function CourseDetailPage() {
   const { id: courseId } = Route.useParams();
   const { currentUserId } = useAuth();
+  const matches = useMatches();
+
+  // Check if we're on a child route (assignments, grades, reflections)
+  const isOnChildRoute = matches.some(match =>
+    match.routeId.includes('/course/$id/assignments') ||
+    match.routeId.includes('/course/$id/grades') ||
+    match.routeId.includes('/course/$id/reflections')
+  );
 
   // Fetch current user for navigation
   const { data: currentUser } = useQuery({
@@ -66,6 +74,16 @@ function CourseDetailPage() {
     (e) => e.role === 'PROFESSOR' || e.role === 'TA',
   ).length;
 
+  // If on a child route, only show the Outlet
+  if (isOnChildRoute) {
+    return (
+      <PageLayout currentUser={currentUser}>
+        <Outlet />
+      </PageLayout>
+    );
+  }
+
+  // Otherwise show the course overview
   return (
     <PageLayout currentUser={currentUser}>
         {/* Course Header */}
