@@ -33,8 +33,8 @@ export function backendFetcher<T>(
         headers: {
           'Content-Type': 'application/json',
         },
-        // 10 second timeout (increased for Render.com spin-up)
-        signal: AbortSignal.timeout(10000),
+        // 60 second timeout (increased for Render.com cold start spin-up)
+        signal: AbortSignal.timeout(60000),
       });
 
       // Handle 502 Bad Gateway (Render.com spinning up)
