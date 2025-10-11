@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import CourseCard from '../components/CourseCard';
 import type { Course, User } from '../types/api';
 
@@ -65,26 +67,26 @@ function Dashboard() {
         <div style={{ marginBottom: '2rem' }}>
           <h1
             style={{
-              fontSize: '1.875rem',
-              fontWeight: 'bold',
-              color: '#111827',
+              fontSize: TYPOGRAPHY.sizes['3xl'],
+              fontWeight: TYPOGRAPHY.weights.bold,
+              color: COLORS.gray[900],
               marginBottom: '0.5rem',
             }}
           >
             Welcome back, {user?.name}!
           </h1>
-          <p style={{ color: '#4b5563' }}>
+          <p style={{ color: COLORS.gray[600] }}>
             Here are your courses for this semester.
           </p>
           <div
             style={{
               marginTop: '0.5rem',
               padding: '0.5rem 1rem',
-              backgroundColor: '#dcfce7',
-              border: '1px solid #86efac',
+              backgroundColor: COLORS.success[100],
+              border: `1px solid ${COLORS.success[500]}`,
               borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              color: '#15803d',
+              fontSize: TYPOGRAPHY.sizes.sm,
+              color: COLORS.success[700],
             }}
           >
             📊 Data Source: NestJS API via TanStack Query
@@ -93,7 +95,7 @@ function Dashboard() {
 
         {coursesLoading ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>
-            <p style={{ color: '#6b7280' }}>Loading courses...</p>
+            <p style={{ color: COLORS.gray[600] }}>Loading courses...</p>
           </div>
         ) : courses && courses.length > 0 ? (
           <div
@@ -116,7 +118,7 @@ function Dashboard() {
           >
             <div
               style={{
-                backgroundColor: '#f3f4f6',
+                backgroundColor: COLORS.gray[100],
                 borderRadius: '50%',
                 width: '6rem',
                 height: '6rem',
@@ -128,8 +130,8 @@ function Dashboard() {
             >
               <span
                 style={{
-                  fontSize: '2.25rem',
-                  color: '#9ca3af',
+                  fontSize: TYPOGRAPHY.sizes['3xl'],
+                  color: COLORS.gray[400],
                 }}
               >
                 📚
@@ -137,15 +139,15 @@ function Dashboard() {
             </div>
             <h3
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 500,
-                color: '#111827',
+                fontSize: TYPOGRAPHY.sizes.lg,
+                fontWeight: TYPOGRAPHY.weights.medium,
+                color: COLORS.gray[900],
                 marginBottom: '0.5rem',
               }}
             >
               No courses found
             </h3>
-            <p style={{ color: '#6b7280' }}>
+            <p style={{ color: COLORS.gray[600] }}>
               You are not enrolled in any courses yet.
             </p>
           </div>
@@ -161,17 +163,17 @@ function Dashboard() {
         >
           <div
             style={{
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe',
+              backgroundColor: COLORS.primary[50],
+              border: `1px solid ${COLORS.primary[100]}`,
               borderRadius: '0.5rem',
               padding: '1.5rem',
             }}
           >
             <h3
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 600,
-                color: '#1e3a8a',
+                fontSize: TYPOGRAPHY.sizes.lg,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.primary[900],
                 marginBottom: '0.5rem',
               }}
             >
@@ -179,10 +181,10 @@ function Dashboard() {
             </h3>
             <div>
               <Link
-                to="/profile"
+                to={ROUTES.profile}
                 style={{
                   display: 'block',
-                  color: '#1d4ed8',
+                  color: COLORS.primary[600],
                   textDecoration: 'none',
                 }}
               >
@@ -193,17 +195,17 @@ function Dashboard() {
 
           <div
             style={{
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
+              backgroundColor: COLORS.success[50],
+              border: `1px solid ${COLORS.success[100]}`,
               borderRadius: '0.5rem',
               padding: '1.5rem',
             }}
           >
             <h3
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 600,
-                color: '#14532d',
+                fontSize: TYPOGRAPHY.sizes.lg,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.success[700],
                 marginBottom: '0.5rem',
               }}
             >
@@ -211,8 +213,8 @@ function Dashboard() {
             </h3>
             <p
               style={{
-                color: '#15803d',
-                fontSize: '0.875rem',
+                color: COLORS.success[500],
+                fontSize: TYPOGRAPHY.sizes.sm,
               }}
             >
               No recent activity to display.
@@ -221,17 +223,17 @@ function Dashboard() {
 
           <div
             style={{
-              backgroundColor: '#fff7ed',
-              border: '1px solid #fed7aa',
+              backgroundColor: COLORS.warning[100],
+              border: `1px solid ${COLORS.warning[100]}`,
               borderRadius: '0.5rem',
               padding: '1.5rem',
             }}
           >
             <h3
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 600,
-                color: '#9a3412',
+                fontSize: TYPOGRAPHY.sizes.lg,
+                fontWeight: TYPOGRAPHY.weights.semibold,
+                color: COLORS.warning[700],
                 marginBottom: '0.5rem',
               }}
             >
@@ -239,8 +241,8 @@ function Dashboard() {
             </h3>
             <p
               style={{
-                color: '#c2410c',
-                fontSize: '0.875rem',
+                color: COLORS.warning[500],
+                fontSize: TYPOGRAPHY.sizes.sm,
               }}
             >
               No upcoming deadlines.
