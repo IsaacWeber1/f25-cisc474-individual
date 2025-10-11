@@ -21,7 +21,8 @@ async function bootstrap() {
     : [
         'http://localhost:3001',
         'http://localhost:3000',
-        'https://f25-cisc474-individual-web-henna.vercel.app'
+        'https://f25-cisc474-individual-web-henna.vercel.app',
+        'https://tanstack-start-app.isaacgweber.workers.dev'
       ];
 
   app.enableCors({
