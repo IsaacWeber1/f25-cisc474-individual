@@ -19,8 +19,11 @@ export function backendFetcher<T>(
   const retryDelay = 2000; // 2 seconds base delay
 
   return async () => {
-    const url = import.meta.env.VITE_BACKEND_URL + endpoint;
+    const backendUrl =
+      import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    const url = backendUrl + endpoint;
 
+    console.log('[fetcher] Backend URL:', backendUrl);
     console.log(
       `[fetcher] Making request to: ${url}${retryCount > 0 ? ` (retry ${retryCount}/${maxRetries})` : ''}`,
     );

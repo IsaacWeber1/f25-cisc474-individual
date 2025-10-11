@@ -9,9 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsersRouteImport } from './routes/users'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CourseIdRouteImport } from './routes/course.$id'
+import { Route as CourseIdReflectionsRouteImport } from './routes/course.$id.reflections'
+import { Route as CourseIdGradesRouteImport } from './routes/course.$id.grades'
+import { Route as CourseIdAssignmentsRouteImport } from './routes/course.$id.assignments'
+import { Route as CourseIdReflectionsReflectionIdRouteImport } from './routes/course.$id.reflections.$reflectionId'
+import { Route as CourseIdAssignmentsAssignmentIdRouteImport } from './routes/course.$id.assignments.$assignmentId'
 
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -22,35 +40,139 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CourseIdRoute = CourseIdRouteImport.update({
+  id: '/course/$id',
+  path: '/course/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CourseIdReflectionsRoute = CourseIdReflectionsRouteImport.update({
+  id: '/reflections',
+  path: '/reflections',
+  getParentRoute: () => CourseIdRoute,
+} as any)
+const CourseIdGradesRoute = CourseIdGradesRouteImport.update({
+  id: '/grades',
+  path: '/grades',
+  getParentRoute: () => CourseIdRoute,
+} as any)
+const CourseIdAssignmentsRoute = CourseIdAssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => CourseIdRoute,
+} as any)
+const CourseIdReflectionsReflectionIdRoute =
+  CourseIdReflectionsReflectionIdRouteImport.update({
+    id: '/$reflectionId',
+    path: '/$reflectionId',
+    getParentRoute: () => CourseIdReflectionsRoute,
+  } as any)
+const CourseIdAssignmentsAssignmentIdRoute =
+  CourseIdAssignmentsAssignmentIdRouteImport.update({
+    id: '/$assignmentId',
+    path: '/$assignmentId',
+    getParentRoute: () => CourseIdAssignmentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/courses': typeof CoursesRoute
+  '/profile': typeof ProfileRoute
+  '/users': typeof UsersRoute
+  '/course/$id': typeof CourseIdRouteWithChildren
+  '/course/$id/assignments': typeof CourseIdAssignmentsRouteWithChildren
+  '/course/$id/grades': typeof CourseIdGradesRoute
+  '/course/$id/reflections': typeof CourseIdReflectionsRouteWithChildren
+  '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRoute
+  '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/courses': typeof CoursesRoute
+  '/profile': typeof ProfileRoute
+  '/users': typeof UsersRoute
+  '/course/$id': typeof CourseIdRouteWithChildren
+  '/course/$id/assignments': typeof CourseIdAssignmentsRouteWithChildren
+  '/course/$id/grades': typeof CourseIdGradesRoute
+  '/course/$id/reflections': typeof CourseIdReflectionsRouteWithChildren
+  '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRoute
+  '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/courses': typeof CoursesRoute
+  '/profile': typeof ProfileRoute
+  '/users': typeof UsersRoute
+  '/course/$id': typeof CourseIdRouteWithChildren
+  '/course/$id/assignments': typeof CourseIdAssignmentsRouteWithChildren
+  '/course/$id/grades': typeof CourseIdGradesRoute
+  '/course/$id/reflections': typeof CourseIdReflectionsRouteWithChildren
+  '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRoute
+  '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/courses'
+  fullPaths:
+    | '/'
+    | '/courses'
+    | '/profile'
+    | '/users'
+    | '/course/$id'
+    | '/course/$id/assignments'
+    | '/course/$id/grades'
+    | '/course/$id/reflections'
+    | '/course/$id/assignments/$assignmentId'
+    | '/course/$id/reflections/$reflectionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/courses'
-  id: '__root__' | '/' | '/courses'
+  to:
+    | '/'
+    | '/courses'
+    | '/profile'
+    | '/users'
+    | '/course/$id'
+    | '/course/$id/assignments'
+    | '/course/$id/grades'
+    | '/course/$id/reflections'
+    | '/course/$id/assignments/$assignmentId'
+    | '/course/$id/reflections/$reflectionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/courses'
+    | '/profile'
+    | '/users'
+    | '/course/$id'
+    | '/course/$id/assignments'
+    | '/course/$id/grades'
+    | '/course/$id/reflections'
+    | '/course/$id/assignments/$assignmentId'
+    | '/course/$id/reflections/$reflectionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CoursesRoute: typeof CoursesRoute
+  ProfileRoute: typeof ProfileRoute
+  UsersRoute: typeof UsersRoute
+  CourseIdRoute: typeof CourseIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses': {
       id: '/courses'
       path: '/courses'
@@ -65,12 +187,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/course/$id': {
+      id: '/course/$id'
+      path: '/course/$id'
+      fullPath: '/course/$id'
+      preLoaderRoute: typeof CourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/course/$id/reflections': {
+      id: '/course/$id/reflections'
+      path: '/reflections'
+      fullPath: '/course/$id/reflections'
+      preLoaderRoute: typeof CourseIdReflectionsRouteImport
+      parentRoute: typeof CourseIdRoute
+    }
+    '/course/$id/grades': {
+      id: '/course/$id/grades'
+      path: '/grades'
+      fullPath: '/course/$id/grades'
+      preLoaderRoute: typeof CourseIdGradesRouteImport
+      parentRoute: typeof CourseIdRoute
+    }
+    '/course/$id/assignments': {
+      id: '/course/$id/assignments'
+      path: '/assignments'
+      fullPath: '/course/$id/assignments'
+      preLoaderRoute: typeof CourseIdAssignmentsRouteImport
+      parentRoute: typeof CourseIdRoute
+    }
+    '/course/$id/reflections/$reflectionId': {
+      id: '/course/$id/reflections/$reflectionId'
+      path: '/$reflectionId'
+      fullPath: '/course/$id/reflections/$reflectionId'
+      preLoaderRoute: typeof CourseIdReflectionsReflectionIdRouteImport
+      parentRoute: typeof CourseIdReflectionsRoute
+    }
+    '/course/$id/assignments/$assignmentId': {
+      id: '/course/$id/assignments/$assignmentId'
+      path: '/$assignmentId'
+      fullPath: '/course/$id/assignments/$assignmentId'
+      preLoaderRoute: typeof CourseIdAssignmentsAssignmentIdRouteImport
+      parentRoute: typeof CourseIdAssignmentsRoute
+    }
   }
 }
+
+interface CourseIdAssignmentsRouteChildren {
+  CourseIdAssignmentsAssignmentIdRoute: typeof CourseIdAssignmentsAssignmentIdRoute
+}
+
+const CourseIdAssignmentsRouteChildren: CourseIdAssignmentsRouteChildren = {
+  CourseIdAssignmentsAssignmentIdRoute: CourseIdAssignmentsAssignmentIdRoute,
+}
+
+const CourseIdAssignmentsRouteWithChildren =
+  CourseIdAssignmentsRoute._addFileChildren(CourseIdAssignmentsRouteChildren)
+
+interface CourseIdReflectionsRouteChildren {
+  CourseIdReflectionsReflectionIdRoute: typeof CourseIdReflectionsReflectionIdRoute
+}
+
+const CourseIdReflectionsRouteChildren: CourseIdReflectionsRouteChildren = {
+  CourseIdReflectionsReflectionIdRoute: CourseIdReflectionsReflectionIdRoute,
+}
+
+const CourseIdReflectionsRouteWithChildren =
+  CourseIdReflectionsRoute._addFileChildren(CourseIdReflectionsRouteChildren)
+
+interface CourseIdRouteChildren {
+  CourseIdAssignmentsRoute: typeof CourseIdAssignmentsRouteWithChildren
+  CourseIdGradesRoute: typeof CourseIdGradesRoute
+  CourseIdReflectionsRoute: typeof CourseIdReflectionsRouteWithChildren
+}
+
+const CourseIdRouteChildren: CourseIdRouteChildren = {
+  CourseIdAssignmentsRoute: CourseIdAssignmentsRouteWithChildren,
+  CourseIdGradesRoute: CourseIdGradesRoute,
+  CourseIdReflectionsRoute: CourseIdReflectionsRouteWithChildren,
+}
+
+const CourseIdRouteWithChildren = CourseIdRoute._addFileChildren(
+  CourseIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CoursesRoute: CoursesRoute,
+  ProfileRoute: ProfileRoute,
+  UsersRoute: UsersRoute,
+  CourseIdRoute: CourseIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

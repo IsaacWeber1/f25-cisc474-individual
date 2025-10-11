@@ -95,6 +95,20 @@ export default function Navigation({ currentUser }: NavigationProps) {
             >
               Profile
             </Link>
+
+            <Link
+              to="/users"
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '0.25rem',
+                backgroundColor: isActive('/users') ? '#1d4ed8' : 'transparent',
+                color: 'white',
+                textDecoration: 'none',
+                transition: 'background-color 0.2s',
+              }}
+            >
+              Users
+            </Link>
           </div>
         </div>
 

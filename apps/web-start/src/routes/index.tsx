@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
+import { useAuth } from '../contexts/AuthContext';
 import Navigation from '../components/Navigation';
 import CourseCard from '../components/CourseCard';
 import type { Course, User } from '../types/api';
@@ -19,9 +20,9 @@ export const Route = createFileRoute('/')({
  * - Authentication-ready architecture
  */
 function Dashboard() {
-  // For now, hardcode user ID (authentication will be added later)
-  // This demonstrates the promise resolution pattern clearly
-  const userId = '1';
+  // Get current user ID from AuthContext (centralized auth management)
+  const { currentUserId } = useAuth();
+  const userId = currentUserId;
 
   // Query 1: Fetch user data
   // Promise is resolved by TanStack Query, not the backend
@@ -272,8 +273,8 @@ function Dashboard() {
               Quick Actions
             </h3>
             <div>
-              <a
-                href="/profile"
+              <Link
+                to="/profile"
                 style={{
                   display: 'block',
                   color: '#1d4ed8',
@@ -281,7 +282,7 @@ function Dashboard() {
                 }}
               >
                 Update Profile →
-              </a>
+              </Link>
             </div>
           </div>
 

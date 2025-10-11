@@ -8,6 +8,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import TanStackQueryDevtools from '../integrations/devtools';
+import { AuthProvider } from '../contexts/AuthContext';
 import appCss from '../styles.css?url';
 import type { ReactNode } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
@@ -54,7 +55,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
-        <Outlet />
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
