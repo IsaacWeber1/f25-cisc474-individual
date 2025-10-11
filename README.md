@@ -27,7 +27,7 @@ A repo that you can fork to make new projects
     - Create a Vercel account using your Github
     - Import your forked repository
     - Make sure you are happy with the Project Name
-    - In the "Root Directory" field, use `apps/web` (do NOT use `apps/docs`)
+    - In the "Root Directory" field, use `apps/web-start` (the TanStack app)
     - Click "Deploy"
     - You can now access your deployed site at the provided URL
 - Database:
@@ -81,9 +81,9 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 
-- `apps/docs`: a [Next.js](https://nextjs.org/) app
-- `apps/api`: a [Nestjs](https://nodejs.org/) app
-- `apps/web`: another [Next.js](https://nextjs.org/) app
+- `apps/docs`: a [Next.js](https://nextjs.org/) app (documentation)
+- `apps/api`: a [NestJS](https://nestjs.com/) backend API
+- `apps/web-start`: a [TanStack Start](https://tanstack.com/start) app (main frontend)
 - `apps/database`: the Prisma database ORM configuration
 - `packages/ui`: a stub React component library shared by both `web` and `docs` applications
 - `packages/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
