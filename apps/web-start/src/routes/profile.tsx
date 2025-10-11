@@ -86,115 +86,15 @@ function ProfilePage() {
   };
 
   if (userLoading) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f8fafc',
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              display: 'inline-block',
-              width: '3rem',
-              height: '3rem',
-              border: '4px solid #e5e7eb',
-              borderTopColor: '#2563eb',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          />
-          <p
-            style={{
-              marginTop: '1rem',
-              color: '#6b7280',
-              fontSize: '1.125rem',
-            }}
-          >
-            Loading profile...
-          </p>
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading profile..." />;
   }
 
   if (userError || !user) {
-    return (
-      <>
-        <Navigation currentUser={null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              padding: '3rem',
-              borderRadius: '0.75rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              maxWidth: '600px',
-              textAlign: 'center',
-            }}
-          >
-            <h1
-              style={{
-                fontSize: '2rem',
-                marginBottom: '1rem',
-                color: '#dc2626',
-              }}
-            >
-              Error Loading Profile
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-              {userError instanceof Error
-                ? userError.message
-                : 'User not found'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </>
-    );
+    return <ErrorMessage error={userError || new Error('User not found')} title="Error Loading Profile" onRetry={() => window.location.reload()} />;
   }
 
   return (
-    <>
-      <Navigation currentUser={user} />
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '2rem 1rem',
-        }}
-      >
+    <PageLayout currentUser={user}>
         {/* Profile Header */}
         <div
           style={{
@@ -623,6 +523,6 @@ function ProfilePage() {
           </div>
         </div>
       </div>
-    </>
+    </PageLayout>
   );
 }
