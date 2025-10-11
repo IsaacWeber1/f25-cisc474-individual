@@ -1,0 +1,58 @@
+6ba9ebf Improve courses rendering
+9b1ae42 Provide helpful links to tanstack docs
+90f7e61 Updated readme with some context about the big change
+e8f1b58 Slightly fancier frontend
+108ae7b Don't push this package lock
+43f32fe Wired up frontend to backend
+6dce105 Controllers and service getters for submissions, assignments, and groups
+8ee3cd6 Added course creation to service while I was there
+8b6d4a7 Courses actually wired up to database
+850ae68 Add in mapped types, might not need it
+7031ddd Deprecate links module, and create courses module
+b977fab Get user by email endpoint
+1dfcd53 Setup DTOs with Zod in packages/api
+da67785 Get rid of links stuff
+d432c73 Generated data example
+d95056b ChatGPT made me a little faker script
+e81651a More sophisticated schema
+b973561 First pass at docker, not working yet
+753b065 Backend for user
+8c1b4c3 Merge remote-tracking branch 'upstream/main'
+3462ad7 Ignore that wrangler folder
+4aad770 Minor modification to schema from inclass
+7cd6ad6 NextJS frontend user list
+276ade9 Merge remote-tracking branch 'upstream/main'
+2c4fbba Add in types for jest in api
+f06da10 Merge remote-tracking branch 'upstream/main'
+56a860e Minor notes from readme
+c88bae9 Adding the typegen for wrangler, just in case
+6b92877 Switching to cloudflare workers
+3b8de85 Reset the deployment since it isn't being used
+6150fc6 Try deploying this way instead
+9fe22d8 Use virtual main
+d2dce16 Retry wrangler deploy for cloudflare
+37ecb44 Wrangler might need to be toplevel
+0e639d8 Trying cloudflare instead
+1f8e370 Move configs around, add some more files
+fa23013 Trim fat on netlify settings
+8c1340e Remove redirects, try a new order for vite
+fd68830 Try adding explicit redirect
+93e972d Move netlify to the end
+637fb12 Tiny change to home route to trigger change
+60cb4fe No, don't specify functions explicitly
+41c3fef Try to make functions explicit
+182f270 Have to actually delete old toml
+82f1952 Move up netlify toml
+29fc606 Merge branch 'UD-CISC474-F25:main' into main
+e47988d Merge pull request #20 from UD-CISC474-F25/tanstack
+4158163 Change default port to not block backend
+ffce763 Copy over public files
+37de413 Initial files for new web-start app
+318d9a6 Removing old package lock, just in case
+6704c47 Incorrect database entry in turbo workspaces
+40aeb08 Deprecate existing web/ and docs/  package scripts
+32050db Get rid of port environment variables from turbo config
+f51fd6a Add build script to database package
+7cf06ad Add build command for database
+20931e5 Fix database settings for import into api
+b189661 Fixes for handling database from api
