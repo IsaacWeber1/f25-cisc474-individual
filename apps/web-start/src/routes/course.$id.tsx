@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
@@ -475,6 +475,9 @@ function CourseDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Nested Routes (Assignments, Grades, Reflections pages) */}
+        <Outlet />
     </PageLayout>
   );
 }
