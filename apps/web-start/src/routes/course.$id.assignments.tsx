@@ -2,7 +2,11 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Course, Grade, User } from '../types/api';
 
 export const Route = createFileRoute('/course/$id/assignments')({
@@ -50,135 +54,46 @@ function AssignmentsPage() {
     );
 
     if (!submission) {
-      return { status: 'Not Submitted', color: '#dc2626', bg: '#fef2f2' };
+      return { status: 'Not Submitted', color: COLORS.error[600], bg: COLORS.error[200] };
     }
 
     const grade = allGrades?.find((g) => g.submissionId === submission.id);
 
     if (grade) {
-      return { status: 'Graded', color: '#15803d', bg: '#dcfce7' };
+      return { status: 'Graded', color: COLORS.success[500], bg: COLORS.success[100] };
     }
 
     if (submission.status === 'SUBMITTED') {
-      return { status: 'Submitted', color: '#d97706', bg: '#fef3c7' };
+      return { status: 'Submitted', color: COLORS.warning[500], bg: COLORS.warning[100] };
     }
 
-    return { status: 'Draft', color: '#6b7280', bg: '#f3f4f6' };
+    return { status: 'Draft', color: COLORS.gray[600], bg: COLORS.gray[100] };
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'REFLECTION':
-        return { color: '#7c3aed', bg: '#f3e8ff' };
+        return { color: COLORS.purple[500], bg: COLORS.purple[100] };
       case 'FILE':
-        return { color: '#2563eb', bg: '#dbeafe' };
+        return { color: COLORS.primary[500], bg: COLORS.primary[100] };
       case 'TEXT':
-        return { color: '#15803d', bg: '#dcfce7' };
+        return { color: COLORS.success[500], bg: COLORS.success[100] };
       default:
-        return { color: '#6b7280', bg: '#f3f4f6' };
+        return { color: COLORS.gray[600], bg: COLORS.gray[100] };
     }
   };
 
   if (courseLoading) {
-    return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                width: '3rem',
-                height: '3rem',
-                border: '4px solid #e5e7eb',
-                borderTopColor: '#2563eb',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <p
-              style={{
-                marginTop: '1rem',
-                color: '#6b7280',
-                fontSize: '1.125rem',
-              }}
-            >
-              Loading assignments...
-            </p>
-            <style>{`
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        </div>
-      </>
-    );
+    return <LoadingSpinner message="Loading assignments..." />;
   }
 
   if (courseError || !course) {
     return (
-      <>
-        <Navigation currentUser={currentUser || null} />
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8fafc',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              padding: '3rem',
-              borderRadius: '0.75rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              maxWidth: '600px',
-              textAlign: 'center',
-            }}
-          >
-            <h1
-              style={{
-                fontSize: '2rem',
-                marginBottom: '1rem',
-                color: '#dc2626',
-              }}
-            >
-              Error Loading Assignments
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-              {courseError instanceof Error
-                ? courseError.message
-                : 'Failed to load assignments'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </>
+      <ErrorMessage
+        error={courseError || new Error('Failed to load assignments')}
+        title="Error Loading Assignments"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -188,24 +103,15 @@ function AssignmentsPage() {
   );
 
   return (
-    <>
-      <Navigation currentUser={currentUser || null} />
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '2rem 1rem',
-        }}
-      >
+    <PageLayout currentUser={currentUser}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <Link
-            to="/course/$id"
-            params={{ id: courseId }}
+            to={ROUTES.course(courseId)}
             style={{
-              color: '#2563eb',
+              color: COLORS.primary[500],
               textDecoration: 'none',
-              fontSize: '0.875rem',
+              fontSize: TYPOGRAPHY.sizes.sm,
               marginBottom: '1rem',
               display: 'inline-block',
             }}
@@ -214,7 +120,7 @@ function AssignmentsPage() {
           </Link>
           <h1
             style={{
-              fontSize: '1.875rem',
+              fontSize: TYPOGRAPHY.sizes['3xl'],
               fontWeight: 'bold',
               color: '#111827',
               marginBottom: '0.5rem',
@@ -433,7 +339,6 @@ function AssignmentsPage() {
             </p>
           </div>
         )}
-      </div>
-    </>
+    </PageLayout>
   );
 }
