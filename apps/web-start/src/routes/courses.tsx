@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { backendFetcher } from '../integrations/fetcher';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Course } from '../types/api';
 
 export const Route = createFileRoute('/courses')({
@@ -28,128 +32,27 @@ function CoursesCatalog() {
   });
 
   if (isLoading) {
-    return (
-      <>
-        <Navigation currentUser={null} />
-        <main
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '2rem 1rem',
-          }}
-        >
-          <div style={{ marginBottom: '2rem' }}>
-            <h1
-              style={{
-                fontSize: '1.875rem',
-                fontWeight: 'bold',
-                color: '#111827',
-                marginBottom: '0.5rem',
-              }}
-            >
-              Course Catalog
-            </h1>
-            <p style={{ color: '#4b5563' }}>
-              All courses in the system, loaded from the backend API.
-            </p>
-          </div>
-          <div
-            style={{
-              padding: '2rem',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                display: 'inline-block',
-                width: '3rem',
-                height: '3rem',
-                border: '4px solid #e5e7eb',
-                borderTopColor: '#15803d',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <p
-              style={{
-                marginTop: '1rem',
-                color: '#6b7280',
-                fontSize: '1.125rem',
-              }}
-            >
-              Loading courses from backend API...
-            </p>
-            <style>{`
-              @keyframes spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        </main>
-      </>
-    );
+    return <LoadingSpinner message="Loading courses from backend API..." />;
   }
 
   if (error) {
-    return (
-      <>
-        <Navigation currentUser={null} />
-        <main
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '2rem 1rem',
-          }}
-        >
-          <div
-            style={{
-              padding: '2rem',
-              textAlign: 'center',
-              backgroundColor: '#fee2e2',
-              border: '1px solid #fecaca',
-              borderRadius: '0.5rem',
-            }}
-          >
-            <p style={{ color: '#dc2626', fontWeight: 600 }}>
-              Error loading courses
-            </p>
-            <p
-              style={{
-                color: '#991b1b',
-                fontSize: '0.875rem',
-                marginTop: '0.5rem',
-              }}
-            >
-              {error instanceof Error ? error.message : 'Unknown error'}
-            </p>
-          </div>
-        </main>
-      </>
-    );
+    return <ErrorMessage error={error} title="Error Loading Courses" />;
   }
 
   return (
-    <>
-      <Navigation currentUser={null} />
-      <main
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '2rem 1rem',
-        }}
-      >
+    <PageLayout currentUser={null}>
         <div style={{ marginBottom: '2rem' }}>
           <h1
             style={{
-              fontSize: '1.875rem',
-              fontWeight: 'bold',
-              color: '#111827',
+              fontSize: TYPOGRAPHY.sizes['3xl'],
+              fontWeight: TYPOGRAPHY.weights.bold,
+              color: COLORS.gray[900],
               marginBottom: '0.5rem',
             }}
           >
             Course Catalog
           </h1>
-          <p style={{ color: '#4b5563' }}>
+          <p style={{ color: COLORS.gray[600] }}>
             All courses in the system, loaded from the backend API via TanStack
             Query.
           </p>
@@ -157,11 +60,11 @@ function CoursesCatalog() {
             style={{
               marginTop: '0.5rem',
               padding: '0.5rem 1rem',
-              backgroundColor: '#dcfce7',
-              border: '1px solid #86efac',
+              backgroundColor: COLORS.success[100],
+              border: `1px solid ${COLORS.success[500]}`,
               borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              color: '#15803d',
+              fontSize: TYPOGRAPHY.sizes.sm,
+              color: COLORS.success[700],
             }}
           >
             🔄 This page uses <strong>TanStack Query</strong> with{' '}
@@ -189,7 +92,7 @@ function CoursesCatalog() {
                 key={course.id}
                 style={{
                   backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  border: `1px solid ${COLORS.gray[200]}`,
                   borderRadius: '0.5rem',
                   padding: '1.5rem',
                   transition: 'all 0.2s',
@@ -209,21 +112,21 @@ function CoursesCatalog() {
                   >
                     <h3
                       style={{
-                        fontSize: '1.25rem',
-                        fontWeight: 600,
-                        color: '#111827',
+                        fontSize: TYPOGRAPHY.sizes.xl,
+                        fontWeight: TYPOGRAPHY.weights.semibold,
+                        color: COLORS.gray[900],
                       }}
                     >
                       {course.code}
                     </h3>
                     <span
                       style={{
-                        backgroundColor: '#dcfce7',
-                        color: '#15803d',
+                        backgroundColor: COLORS.success[100],
+                        color: COLORS.success[700],
                         padding: '0.25rem 0.5rem',
                         borderRadius: '0.25rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 500,
+                        fontSize: TYPOGRAPHY.sizes.xs,
+                        fontWeight: TYPOGRAPHY.weights.medium,
                       }}
                     >
                       {course.semester}
@@ -231,9 +134,9 @@ function CoursesCatalog() {
                   </div>
                   <h4
                     style={{
-                      fontSize: '1rem',
-                      fontWeight: 500,
-                      color: '#374151',
+                      fontSize: TYPOGRAPHY.sizes.base,
+                      fontWeight: TYPOGRAPHY.weights.medium,
+                      color: COLORS.gray[700],
                       marginBottom: '0.5rem',
                     }}
                   >
@@ -242,8 +145,8 @@ function CoursesCatalog() {
                   {course.description && (
                     <p
                       style={{
-                        fontSize: '0.875rem',
-                        color: '#6b7280',
+                        fontSize: TYPOGRAPHY.sizes.sm,
+                        color: COLORS.gray[600],
                         lineHeight: 1.5,
                         marginBottom: '1rem',
                       }}
@@ -257,7 +160,7 @@ function CoursesCatalog() {
 
                 <div
                   style={{
-                    borderTop: '1px solid #e5e7eb',
+                    borderTop: `1px solid ${COLORS.gray[200]}`,
                     paddingTop: '1rem',
                     marginTop: 'auto',
                   }}
@@ -352,8 +255,8 @@ function CoursesCatalog() {
 
                   <div
                     style={{
-                      fontSize: '0.875rem',
-                      color: '#6b7280',
+                      fontSize: TYPOGRAPHY.sizes.sm,
+                      color: COLORS.gray[600],
                       marginBottom: '0.75rem',
                     }}
                   >
@@ -361,18 +264,17 @@ function CoursesCatalog() {
                   </div>
 
                   <Link
-                    to="/course/$id"
-                    params={{ id: course.id }}
+                    to={ROUTES.course(course.id)}
                     style={{
                       display: 'block',
                       textAlign: 'center',
-                      backgroundColor: '#15803d',
+                      backgroundColor: COLORS.success[600],
                       color: 'white',
                       padding: '0.5rem 1rem',
                       borderRadius: '0.375rem',
                       textDecoration: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
+                      fontWeight: TYPOGRAPHY.weights.medium,
+                      fontSize: TYPOGRAPHY.sizes.sm,
                       transition: 'background-color 0.2s',
                     }}
                   >
@@ -383,7 +285,6 @@ function CoursesCatalog() {
             );
           })}
         </div>
-      </main>
-    </>
+    </PageLayout>
   );
 }

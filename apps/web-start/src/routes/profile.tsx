@@ -2,7 +2,11 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
-import Navigation from '../components/Navigation';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { PageLayout } from '../components/common/PageLayout';
+import { ROUTES } from '../config/routes';
+import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Course, Grade, User } from '../types/api';
 
 export const Route = createFileRoute('/profile')({
