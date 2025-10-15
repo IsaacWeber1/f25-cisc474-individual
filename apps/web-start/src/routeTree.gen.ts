@@ -20,6 +20,7 @@ import { Route as CourseIdIndexRouteImport } from './routes/course.$id.index'
 import { Route as CourseIdReflectionsRouteImport } from './routes/course.$id.reflections'
 import { Route as CourseIdGradesRouteImport } from './routes/course.$id.grades'
 import { Route as CourseIdAssignmentsRouteImport } from './routes/course.$id.assignments'
+import { Route as CourseIdAssignmentsIndexRouteImport } from './routes/course.$id.assignments.index'
 import { Route as CourseIdReflectionsReflectionIdRouteImport } from './routes/course.$id.reflections.$reflectionId'
 import { Route as CourseIdAssignmentsAssignmentIdRouteImport } from './routes/course.$id.assignments.$assignmentId'
 import { Route as CourseIdAssignmentsAssignmentIdSubmissionsRouteImport } from './routes/course.$id.assignments.$assignmentId.submissions'
@@ -79,6 +80,12 @@ const CourseIdAssignmentsRoute = CourseIdAssignmentsRouteImport.update({
   path: '/assignments',
   getParentRoute: () => CourseIdRoute,
 } as any)
+const CourseIdAssignmentsIndexRoute =
+  CourseIdAssignmentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => CourseIdAssignmentsRoute,
+  } as any)
 const CourseIdReflectionsReflectionIdRoute =
   CourseIdReflectionsReflectionIdRouteImport.update({
     id: '/$reflectionId',
@@ -112,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/course/$id/': typeof CourseIdIndexRoute
   '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRouteWithChildren
   '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
+  '/course/$id/assignments/': typeof CourseIdAssignmentsIndexRoute
   '/course/$id/assignments/$assignmentId/submissions': typeof CourseIdAssignmentsAssignmentIdSubmissionsRoute
 }
 export interface FileRoutesByTo {
@@ -121,12 +129,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
-  '/course/$id/assignments': typeof CourseIdAssignmentsRouteWithChildren
   '/course/$id/grades': typeof CourseIdGradesRoute
   '/course/$id/reflections': typeof CourseIdReflectionsRouteWithChildren
   '/course/$id': typeof CourseIdIndexRoute
   '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRouteWithChildren
   '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
+  '/course/$id/assignments': typeof CourseIdAssignmentsIndexRoute
   '/course/$id/assignments/$assignmentId/submissions': typeof CourseIdAssignmentsAssignmentIdSubmissionsRoute
 }
 export interface FileRoutesById {
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/course/$id/': typeof CourseIdIndexRoute
   '/course/$id/assignments/$assignmentId': typeof CourseIdAssignmentsAssignmentIdRouteWithChildren
   '/course/$id/reflections/$reflectionId': typeof CourseIdReflectionsReflectionIdRoute
+  '/course/$id/assignments/': typeof CourseIdAssignmentsIndexRoute
   '/course/$id/assignments/$assignmentId/submissions': typeof CourseIdAssignmentsAssignmentIdSubmissionsRoute
 }
 export interface FileRouteTypes {
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/course/$id/'
     | '/course/$id/assignments/$assignmentId'
     | '/course/$id/reflections/$reflectionId'
+    | '/course/$id/assignments/'
     | '/course/$id/assignments/$assignmentId/submissions'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -171,12 +181,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/users'
-    | '/course/$id/assignments'
     | '/course/$id/grades'
     | '/course/$id/reflections'
     | '/course/$id'
     | '/course/$id/assignments/$assignmentId'
     | '/course/$id/reflections/$reflectionId'
+    | '/course/$id/assignments'
     | '/course/$id/assignments/$assignmentId/submissions'
   id:
     | '__root__'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/course/$id/'
     | '/course/$id/assignments/$assignmentId'
     | '/course/$id/reflections/$reflectionId'
+    | '/course/$id/assignments/'
     | '/course/$id/assignments/$assignmentId/submissions'
   fileRoutesById: FileRoutesById
 }
@@ -285,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CourseIdAssignmentsRouteImport
       parentRoute: typeof CourseIdRoute
     }
+    '/course/$id/assignments/': {
+      id: '/course/$id/assignments/'
+      path: '/'
+      fullPath: '/course/$id/assignments/'
+      preLoaderRoute: typeof CourseIdAssignmentsIndexRouteImport
+      parentRoute: typeof CourseIdAssignmentsRoute
+    }
     '/course/$id/reflections/$reflectionId': {
       id: '/course/$id/reflections/$reflectionId'
       path: '/$reflectionId'
@@ -326,11 +344,13 @@ const CourseIdAssignmentsAssignmentIdRouteWithChildren =
 
 interface CourseIdAssignmentsRouteChildren {
   CourseIdAssignmentsAssignmentIdRoute: typeof CourseIdAssignmentsAssignmentIdRouteWithChildren
+  CourseIdAssignmentsIndexRoute: typeof CourseIdAssignmentsIndexRoute
 }
 
 const CourseIdAssignmentsRouteChildren: CourseIdAssignmentsRouteChildren = {
   CourseIdAssignmentsAssignmentIdRoute:
     CourseIdAssignmentsAssignmentIdRouteWithChildren,
+  CourseIdAssignmentsIndexRoute: CourseIdAssignmentsIndexRoute,
 }
 
 const CourseIdAssignmentsRouteWithChildren =
