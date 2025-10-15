@@ -100,7 +100,7 @@ function GradesPage() {
   }
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+    <>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <Link
@@ -388,6 +388,6 @@ function GradesPage() {
             </p>
           </div>
         )}
-    </div>
+    </>
   );
 }

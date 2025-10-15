@@ -5,7 +5,6 @@ import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import GradingInterface from '../components/GradingInterface';
@@ -98,7 +97,7 @@ function SubmissionsPage() {
     : null;
 
   return (
-    <PageLayout currentUser={currentUser}>
+    <>
       <div style={{ marginBottom: '2rem' }}>
         <Link
           to={ROUTES.courseAssignment(courseId, assignmentId)}
@@ -241,6 +240,6 @@ function SubmissionsPage() {
           )}
         </div>
       </div>
-    </PageLayout>
+    </>
   );
 }

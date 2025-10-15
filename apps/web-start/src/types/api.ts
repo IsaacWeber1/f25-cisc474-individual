@@ -48,7 +48,7 @@ export interface Assignment {
   type: 'FILE' | 'TEXT' | 'REFLECTION';
   maxPoints: number;
   dueDate: Date;
-  instructions: Array<string>;
+  instructions: Array<string> | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
