@@ -4,7 +4,7 @@
  */
 
 // User Authentication
-export const CURRENT_USER_ID = 'cmfr0jaxg0001k07ao6mvl0d2';
+export const CURRENT_USER_ID = 'cmfr0jb7n0004k07ai1j02p8z'; // Dr. Bart (PROFESSOR)
 
 // API Endpoints
 export const API_ENDPOINTS = {
