@@ -4,7 +4,6 @@ import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Grade, User } from '../types/api';
@@ -81,7 +80,7 @@ function AssignmentDetailPage() {
   const statusInfo = getStatusInfo();
 
   return (
-    <PageLayout currentUser={currentUser}>
+    <>
         {/* Breadcrumbs */}
         <div
           style={{
@@ -258,7 +257,7 @@ function AssignmentDetailPage() {
         </div>
 
         {/* Instructions */}
-        {assignment.instructions.length > 0 && (
+        {assignment.instructions && assignment.instructions.length > 0 && (
           <div
             style={{
               backgroundColor: 'white',
@@ -445,6 +444,6 @@ function AssignmentDetailPage() {
             </p>
           </div>
         )}
-    </PageLayout>
+    </>
   );
 }

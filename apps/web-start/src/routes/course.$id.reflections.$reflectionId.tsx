@@ -4,7 +4,6 @@ import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Assignment, Grade, User } from '../types/api';
@@ -57,7 +56,7 @@ function ReflectionDetailPage() {
   const template = reflection.reflectionTemplate;
 
   return (
-    <PageLayout currentUser={currentUser}>
+    <>
         {/* Breadcrumbs */}
         <div
           style={{
@@ -299,6 +298,6 @@ function ReflectionDetailPage() {
             </p>
           </div>
         )}
-    </PageLayout>
+    </>
   );
 }

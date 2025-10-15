@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { backendFetcher } from '../integrations/fetcher';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,7 +48,7 @@ function AssignmentsPage() {
 
   // Helper to get assignment status for current user
   const getAssignmentStatus = (assignment: Assignment) => {
-    const submission = assignment.submissions?.find(
+    const submission = assignment.submissions.find(
       (s) => s.studentId === currentUserId,
     );
 
@@ -102,7 +102,7 @@ function AssignmentsPage() {
   );
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+    <>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <Link
@@ -142,7 +142,7 @@ function AssignmentsPage() {
               const typeStyle = getTypeColor(assignment.type);
 
               // Get grade if exists
-              const submission = assignment.submissions?.find(
+              const submission = assignment.submissions.find(
                 (s) => s.studentId === currentUserId,
               );
               const grade = allGrades?.find(
@@ -338,6 +338,9 @@ function AssignmentsPage() {
             </p>
           </div>
         )}
-    </div>
+
+        {/* Nested route outlet for assignment details */}
+        <Outlet />
+    </>
   );
 }
