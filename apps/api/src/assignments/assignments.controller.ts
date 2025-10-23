@@ -6,8 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AssignmentsService } from './assignments.service';
+import { CurrentUser } from '../auth/current-user.decorator';
 import type {
   CreateAssignmentDto,
   UpdateAssignmentDto,
@@ -16,6 +19,7 @@ import type {
 import type { DeleteResponse } from '@repo/api/common';
 
 @Controller('assignments')
+@UseGuards(AuthGuard('jwt')) // Protect all routes in this controller
 export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 

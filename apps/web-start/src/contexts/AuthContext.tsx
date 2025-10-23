@@ -1,30 +1,39 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { CURRENT_USER_ID } from '../config/constants';
+import { createContext, useContext } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import type { ReactNode } from 'react';
 import type { User } from '../types/api';
 
 interface AuthContextType {
   currentUser: User | null;
-  currentUserId: string;
+  currentUserId: string | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading: auth0Loading } = useAuth0();
+  const authFetch = useAuthFetcher();
 
-  useEffect(() => {
-    // For now, just use the hardcoded ID from constants
-    // TODO: Replace with actual session management later
-    setIsLoading(false);
-  }, []);
+  // Fetch current user from backend /users/me
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+  } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => authFetch<User>('/users/me'),
+    enabled: isAuthenticated, // Only fetch if authenticated
+    retry: false,
+  });
 
   const value = {
-    currentUser,
-    currentUserId: CURRENT_USER_ID, // From constants!
-    isLoading,
+    currentUser: currentUser || null,
+    currentUserId: currentUser?.id || null,
+    isLoading: auth0Loading || userLoading,
+    isAuthenticated,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
