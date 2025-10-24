@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AssignmentsService } from './assignments.service';
+import { UsersService } from '../users/users.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type {
   CreateAssignmentDto,
@@ -21,7 +22,10 @@ import type { DeleteResponse } from '@repo/api/common';
 @Controller('assignments')
 @UseGuards(AuthGuard('jwt')) // Protect all routes in this controller
 export class AssignmentsController {
-  constructor(private readonly assignmentsService: AssignmentsService) {}
+  constructor(
+    private readonly assignmentsService: AssignmentsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   /**
    * GET /assignments
@@ -53,8 +57,9 @@ export class AssignmentsController {
     @CurrentUser() user: any,
     @Body() dto: CreateAssignmentDto,
   ): Promise<AssignmentResponse> {
-    // Use authenticated user's ID
-    return await this.assignmentsService.create(dto, user.userId);
+    // Get database user ID from Auth0 ID
+    const dbUser = await this.usersService.findByAuth0Id(user.userId);
+    return await this.assignmentsService.create(dto, dbUser.id);
   }
 
   /**

@@ -198,4 +198,10 @@ export class UsersService {
       },
     });
   }
+
+  async findByAuth0Id(auth0Id: string) {
+    return await this.prisma.user.findUnique({
+      where: { auth0Id },
+    });
+  }
 }
