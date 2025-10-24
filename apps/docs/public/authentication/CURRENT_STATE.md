@@ -41,7 +41,7 @@
 **Previous Problem**: Database password contained special characters causing Prisma connection failures
 
 **Solution Applied**:
-- Reset Supabase password to `CISC474Auth2025` (alphanumeric only)
+- Reset Supabase password to alphanumeric-only format
 - Database reset and migration completed successfully
 - Both pooler and direct connections working
 

@@ -56,8 +56,8 @@ https://tanstack-start-app.isaacgweber.workers.dev
 
 **Root `.env`:**
 ```bash
-DATABASE_URL="postgres://postgres.rfhjmdkmgtvjttcczcua:CISC474Auth2025@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
-DIRECT_URL="postgres://postgres.rfhjmdkmgtvjttcczcua:CISC474Auth2025@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
+DATABASE_URL="postgres://postgres.<project-ref>:<password>@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgres://postgres.<project-ref>:<password>@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
 AUTH0_ISSUER_URL=https://dev-3ak1hbs2abxn01ak.us.auth0.com/
 AUTH0_AUDIENCE=http://localhost:3000
 ```
