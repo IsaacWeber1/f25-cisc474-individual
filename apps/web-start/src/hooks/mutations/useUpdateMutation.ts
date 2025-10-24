@@ -63,50 +63,29 @@ export function useUpdateMutation<TResponse, TData>(
   return useMutation({
     mutationFn: async ({ id, data }: UpdateMutationVariables<TData>): Promise<TResponse> => {
       const endpoint = endpointFn(id);
-      const url = `${backendUrl}${endpoint}`;
 
-      console.log('[useUpdateMutation] PATCH to:', url);
+      console.log('[useUpdateMutation] PATCH to:', endpoint);
       console.log('[useUpdateMutation] Data:', data);
 
-      const response = await authFetch(url, {
+      const response = await authFetch(endpoint, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
-        signal: AbortSignal.timeout(30000),
       });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        let errorMessage = `Update failed: ${response.status} ${response.statusText}`;
-
-        try {
-          const errorJson = JSON.parse(errorBody);
-          errorMessage = errorJson.message || errorMessage;
-        } catch {
-          // Error body wasn't JSON
-        }
-
-        console.error('[useUpdateMutation] Error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('[useUpdateMutation] Success:', result);
-      return result as TResponse;
+      console.log('[useUpdateMutation] Success:', response);
+      return response as TResponse;
     },
 
     onSuccess: (data, variables) => {
-      // Invalidate specified cache keys
+      // Invalidate all specified cache keys
       invalidateKeys.forEach((key) => {
         console.log('[useUpdateMutation] Invalidating cache key:', key);
         queryClient.invalidateQueries({ queryKey: key });
       });
 
-      // Also invalidate the specific item that was updated
-      console.log('[useUpdateMutation] Invalidating updated item cache');
+      // Also invalidate the specific item
       const endpoint = endpointFn(variables.id);
+      console.log('[useUpdateMutation] Invalidating item cache:', endpoint);
       queryClient.invalidateQueries({ queryKey: [endpoint] });
     },
 
