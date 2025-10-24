@@ -23,7 +23,12 @@ export function useAuthFetcher() {
     // Add JWT token if authenticated
     if (isAuthenticated) {
       try {
-        const token = await getAccessTokenSilently();
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+            scope: 'openid profile email',
+          },
+        });
         headers['Authorization'] = `Bearer ${token}`;
       } catch (error) {
         console.error('[authFetcher] Failed to get access token:', error);

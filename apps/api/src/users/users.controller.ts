@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -9,9 +9,31 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(
+    @CurrentUser() user: any,
+    @Query('email') emailParam?: string,
+    @Query('name') nameParam?: string,
+    @Query('emailVerified') emailVerifiedParam?: string,
+  ) {
+    console.log('[UsersController] Received query params:', {
+      emailParam,
+      nameParam,
+      emailVerifiedParam,
+    });
+    console.log('[UsersController] JWT user:', user);
+
+    // Use query params as fallback if JWT doesn't include profile claims
+    const userWithProfile = {
+      ...user,
+      email: user.email || emailParam,
+      name: user.name || nameParam,
+      emailVerified: emailVerifiedParam === 'true',
+    };
+
+    console.log('[UsersController] Final userWithProfile:', userWithProfile);
+
     // Sync Auth0 user to database and return database record
-    return this.usersService.syncAuth0User(user);
+    return this.usersService.syncAuth0User(userWithProfile);
   }
 
   @Get()
