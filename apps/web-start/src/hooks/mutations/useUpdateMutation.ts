@@ -23,6 +23,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
+import { useAuthFetcher } from '../../integrations/authFetcher';
 
 interface UpdateMutationVariables<TData> {
   id: string;
@@ -56,6 +57,7 @@ export function useUpdateMutation<TResponse, TData>(
   options: UseUpdateMutationOptions = {},
 ): UseMutationResult<TResponse, Error, UpdateMutationVariables<TData>> {
   const queryClient = useQueryClient();
+  const authFetch = useAuthFetcher();
   const { invalidateKeys = [], backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000' } = options;
 
   return useMutation({
@@ -66,7 +68,7 @@ export function useUpdateMutation<TResponse, TData>(
       console.log('[useUpdateMutation] PATCH to:', url);
       console.log('[useUpdateMutation] Data:', data);
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
