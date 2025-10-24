@@ -21,9 +21,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
 import type { DeleteResponse } from '@repo/api/common';
+import { useAuthFetcher } from '../../integrations/authFetcher';
 
 interface UseDeleteMutationOptions {
-import { useAuthFetcher } from '../../integrations/authFetcher';
   /**
    * Query keys to invalidate after successful deletion
    */
