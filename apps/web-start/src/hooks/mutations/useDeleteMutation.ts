@@ -65,33 +65,15 @@ export function useDeleteMutation<TResponse = DeleteResponse>(
   return useMutation({
     mutationFn: async (id: string): Promise<TResponse> => {
       const endpoint = endpointFn(id);
-      const url = `${backendUrl}${endpoint}`;
 
-      console.log('[useDeleteMutation] DELETE to:', url);
+      console.log('[useDeleteMutation] DELETE to:', endpoint);
 
-      const response = await authFetch(url, {
+      const response = await authFetch(endpoint, {
         method: 'DELETE',
-        signal: AbortSignal.timeout(30000),
       });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        let errorMessage = `Delete failed: ${response.status} ${response.statusText}`;
-
-        try {
-          const errorJson = JSON.parse(errorBody);
-          errorMessage = errorJson.message || errorMessage;
-        } catch {
-          // Error body wasn't JSON
-        }
-
-        console.error('[useDeleteMutation] Error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('[useDeleteMutation] Success:', result);
-      return result as TResponse;
+      console.log('[useDeleteMutation] Success:', response);
+      return response as TResponse;
     },
 
     onMutate: async (id: string) => {
