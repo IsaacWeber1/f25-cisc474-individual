@@ -88,43 +88,6 @@ export function useUpdateMutation<TResponse, TData>(
       console.log('[useUpdateMutation] Invalidating item cache:', endpoint);
       queryClient.invalidateQueries({ queryKey: [endpoint] });
     },
-  });
-}
-
-// Removed redundant error handling code below
-/*
-      if (!response.ok) {
-        const errorBody = await response.text();
-        let errorMessage = `Update failed: ${response.status} ${response.statusText}`;
-
-        try {
-          const errorJson = JSON.parse(errorBody);
-          errorMessage = errorJson.message || errorMessage;
-        } catch {
-          // Error body wasn't JSON
-        }
-
-        console.error('[useUpdateMutation] Error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('[useUpdateMutation] Success:', result);
-      return result as TResponse;
-    },
-
-    onSuccess: (data, variables) => {
-      // Invalidate specified cache keys
-      invalidateKeys.forEach((key) => {
-        console.log('[useUpdateMutation] Invalidating cache key:', key);
-        queryClient.invalidateQueries({ queryKey: key });
-      });
-
-      // Also invalidate the specific item that was updated
-      console.log('[useUpdateMutation] Invalidating updated item cache');
-      const endpoint = endpointFn(variables.id);
-      queryClient.invalidateQueries({ queryKey: [endpoint] });
-    },
 
     onError: (error) => {
       console.error('[useUpdateMutation] Mutation failed:', error);
