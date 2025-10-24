@@ -359,12 +359,11 @@ Total Tests: 150-200 tests
 
 1. **Start servers** (if not running):
    ```bash
-   # Terminal 1 - API
-   cd apps/api && npm run dev
-
-   # Terminal 2 - Frontend
-   cd apps/web-start && npm run dev
+   # From project root - starts both servers
+   npm run dev
    ```
+   - Backend API: http://localhost:3000
+   - Frontend: http://localhost:3001
 
 2. **Verify data is loaded**:
    - Login at http://localhost:3001

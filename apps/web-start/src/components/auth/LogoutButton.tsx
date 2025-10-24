@@ -5,13 +5,14 @@ export function LogoutButton() {
 
   return (
     <button
-      onClick={() =>
+      onClick={() => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
         logout({
           logoutParams: {
-            returnTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+            returnTo: origin,
           },
-        })
-      }
+        });
+      }}
       disabled={isLoading}
       className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >

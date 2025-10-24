@@ -127,9 +127,8 @@
 ## 🚀 Quick Commands
 
 ```bash
-# Start development (if not running)
-cd apps/api && npm run dev              # Backend :3000
-cd apps/web-start && npm run dev        # Frontend :3001
+# Start development servers (from project root)
+npm run dev                             # Starts BOTH backend (:3000) and frontend (:3001)
 
 # Verify data loaded
 # Login at http://localhost:3001, navigate to /courses

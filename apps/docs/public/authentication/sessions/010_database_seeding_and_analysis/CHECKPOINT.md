@@ -333,9 +333,8 @@ curl http://localhost:3000/courses
 # Seed database (if needed again)
 cd packages/database && npm run db:seed
 
-# Start development servers
-cd apps/api && npm run dev              # Backend :3000
-cd apps/web-start && npm run dev        # Frontend :3001
+# Start development servers (from project root)
+npm run dev                             # Starts BOTH backend (:3000) and frontend (:3001)
 
 # Generate new controller/service
 cd apps/api

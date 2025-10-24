@@ -428,4 +428,21 @@ Once Phase 1 is complete, you'll have a **functional LMS** where:
 
 ---
 
+---
+
+## 💻 Starting the Development Servers
+
+From the project root, run:
+```bash
+npm run dev
+```
+
+This single command starts both:
+- **Backend API** on http://localhost:3000
+- **Frontend** on http://localhost:3001
+
+No need for separate terminals or filter flags - the turbo monorepo handles both!
+
+---
+
 **Start Now**: Step 1.1 - Generate Submissions Boilerplate ⬆️

@@ -29,7 +29,9 @@
     "test:e2e:report": "playwright show-report",
     "test:auth:quick": "npm run auth:test",
     "test:auth:full": "sh tests/e2e/run-auth-tests.sh",
-    "playwright:install": "npx playwright install"
+    "playwright:install": "npx playwright install",
+    "users:create": "sh scripts/create-test-users.sh",
+    "users:create:custom": "sh scripts/create-test-users.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

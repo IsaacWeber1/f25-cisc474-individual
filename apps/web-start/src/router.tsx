@@ -22,6 +22,7 @@ export const getRouter = () => {
           authorizationParams={{
             redirect_uri: typeof window !== 'undefined' ? `${window.location.origin}/home` : undefined,
             audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+            scope: 'openid profile email',
           }}
         >
           <TanstackQuery.Provider {...rqContext}>

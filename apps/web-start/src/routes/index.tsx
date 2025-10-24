@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useAuth0 } from '@auth0/auth0-react';
 import { LoginButton } from '../components/auth/LoginButton';
+import { SignupButton } from '../components/auth/SignupButton';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 
 export const Route = createFileRoute('/')({
@@ -64,9 +65,14 @@ function Index() {
           </p>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
           <LoginButton />
+          <SignupButton />
         </div>
+
+        <p className="text-sm text-gray-600 mb-8">
+          New to the system? Click <strong>Sign Up</strong> to create an account.
+        </p>
 
         <div className="text-sm text-gray-600">
           <p>Powered by Auth0 + NestJS + TanStack</p>

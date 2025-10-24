@@ -71,9 +71,8 @@ VITE_AUTH0_AUDIENCE=http://localhost:3000/
 
 #### 3. Restart Both Servers
 ```bash
-# Kill current servers (Ctrl+C) then:
-cd apps/api && npm run dev
-cd apps/web-start && npm run dev
+# Kill current servers (Ctrl+C) then restart from project root:
+npm run dev  # Starts both backend and frontend
 ```
 
 ---
