@@ -1,254 +1,83 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
-import { useAuth } from '../contexts/AuthContext';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PageLayout } from '../components/common/PageLayout';
-import { ROUTES } from '../config/routes';
+import { useAuth0 } from '@auth0/auth0-react';
+import { LoginButton } from '../components/auth/LoginButton';
+import { SignupButton } from '../components/auth/SignupButton';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
-import CourseCard from '../components/CourseCard';
-import type { Course, User } from '../types/api';
 
 export const Route = createFileRoute('/')({
-  component: Dashboard,
+  component: Index,
 });
 
-/**
- * Dashboard Component
- *
- * Demonstrates promise resolution strategy:
- * - Backend returns promises (via backendFetcher)
- * - TanStack Query resolves promises at component level
- * - Fast UX with loading states and caching
- * - Authentication-ready architecture
- */
-function Dashboard() {
-  // Get current user ID from AuthContext (centralized auth management)
-  const { currentUserId } = useAuth();
-  const userId = currentUserId;
+function Index() {
+  const { isAuthenticated, isLoading } = useAuth0();
 
-  // Query 1: Fetch user data
-  // Promise is resolved by TanStack Query, not the backend
-  const {
-    data: user,
-    isLoading: userLoading,
-    error: userError,
-  } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: backendFetcher<User>(`/users/${userId}`),
-  });
-
-  // Query 2: Fetch user's courses (runs in parallel)
-  // Demonstrates parallel promise resolution for fast UX
-  const { data: courses, isLoading: coursesLoading } = useQuery({
-    queryKey: ['courses', userId],
-    queryFn: async () => {
-      // This promise is resolved by TanStack Query
-      const userData = await backendFetcher<User>(`/users/${userId}`)();
-      return userData.enrollments.map((e) => e.course);
-    },
-    enabled: !!user, // Only run after user is loaded
-  });
-
-  // Loading state - shown while promises are resolving
-  if (userLoading) {
-    return <LoadingSpinner message="Loading dashboard..." />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Error state
-  if (userError) {
-    return <ErrorMessage error={userError} title="Error Loading Dashboard" onRetry={() => window.location.reload()} />;
-  }
-
-  // Main dashboard content
-  return (
-    <PageLayout currentUser={user}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h1
-            style={{
-              fontSize: TYPOGRAPHY.sizes['3xl'],
-              fontWeight: TYPOGRAPHY.weights.bold,
-              color: COLORS.gray[900],
-              marginBottom: '0.5rem',
-            }}
-          >
-            Welcome back, {user?.name}!
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <div className="text-center max-w-2xl">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            Welcome Back!
           </h1>
-          <p style={{ color: COLORS.gray[600] }}>
-            Here are your courses for this semester.
+          <p className="text-xl text-gray-700 mb-8">
+            You're already logged in. Ready to continue?
           </p>
-          <div
-            style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: COLORS.success[100],
-              border: `1px solid ${COLORS.success[500]}`,
-              borderRadius: '0.375rem',
-              fontSize: TYPOGRAPHY.sizes.sm,
-              color: COLORS.success[700],
-            }}
-          >
-            📊 Data Source: NestJS API via TanStack Query
+          <div className="space-y-4">
+            <Link
+              to="/home"
+              className="inline-block px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Dashboard
+            </Link>
+            <br />
+            <Link
+              to="/courses"
+              className="inline-block px-8 py-4 bg-white text-blue-600 text-lg font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              View Courses
+            </Link>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {coursesLoading ? (
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            <p style={{ color: COLORS.gray[600] }}>Loading courses...</p>
-          </div>
-        ) : courses && courses.length > 0 ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
-        ) : (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '3rem 0',
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: COLORS.gray[100],
-                borderRadius: '50%',
-                width: '6rem',
-                height: '6rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem auto',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: TYPOGRAPHY.sizes['3xl'],
-                  color: COLORS.gray[400],
-                }}
-              >
-                📚
-              </span>
-            </div>
-            <h3
-              style={{
-                fontSize: TYPOGRAPHY.sizes.lg,
-                fontWeight: TYPOGRAPHY.weights.medium,
-                color: COLORS.gray[900],
-                marginBottom: '0.5rem',
-              }}
-            >
-              No courses found
-            </h3>
-            <p style={{ color: COLORS.gray[600] }}>
-              You are not enrolled in any courses yet.
-            </p>
-          </div>
-        )}
-
-        <div
-          style={{
-            marginTop: '3rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1.5rem',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: COLORS.primary[50],
-              border: `1px solid ${COLORS.primary[100]}`,
-              borderRadius: '0.5rem',
-              padding: '1.5rem',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: TYPOGRAPHY.sizes.lg,
-                fontWeight: TYPOGRAPHY.weights.semibold,
-                color: COLORS.primary[900],
-                marginBottom: '0.5rem',
-              }}
-            >
-              Quick Actions
-            </h3>
-            <div>
-              <Link
-                to={ROUTES.profile}
-                style={{
-                  display: 'block',
-                  color: COLORS.primary[600],
-                  textDecoration: 'none',
-                }}
-              >
-                Update Profile →
-              </Link>
-            </div>
-          </div>
-
-          <div
-            style={{
-              backgroundColor: COLORS.success[50],
-              border: `1px solid ${COLORS.success[100]}`,
-              borderRadius: '0.5rem',
-              padding: '1.5rem',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: TYPOGRAPHY.sizes.lg,
-                fontWeight: TYPOGRAPHY.weights.semibold,
-                color: COLORS.success[700],
-                marginBottom: '0.5rem',
-              }}
-            >
-              Recent Activity
-            </h3>
-            <p
-              style={{
-                color: COLORS.success[500],
-                fontSize: TYPOGRAPHY.sizes.sm,
-              }}
-            >
-              No recent activity to display.
-            </p>
-          </div>
-
-          <div
-            style={{
-              backgroundColor: COLORS.warning[100],
-              border: `1px solid ${COLORS.warning[100]}`,
-              borderRadius: '0.5rem',
-              padding: '1.5rem',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: TYPOGRAPHY.sizes.lg,
-                fontWeight: TYPOGRAPHY.weights.semibold,
-                color: COLORS.warning[700],
-                marginBottom: '0.5rem',
-              }}
-            >
-              Upcoming Deadlines
-            </h3>
-            <p
-              style={{
-                color: COLORS.warning[500],
-                fontSize: TYPOGRAPHY.sizes.sm,
-              }}
-            >
-              No upcoming deadlines.
-            </p>
-          </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="text-center max-w-2xl">
+        <div className="mb-8">
+          <div className="text-6xl mb-4">📚</div>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Course Management System
+          </h1>
+          <p className="text-xl text-gray-700">
+            Manage your courses, assignments, and submissions all in one place.
+          </p>
         </div>
-    </PageLayout>
+
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <LoginButton />
+          <SignupButton />
+        </div>
+
+        <p className="text-sm text-gray-600 mb-8">
+          New to the system? Click <strong>Sign Up</strong> to create an account.
+        </p>
+
+        <div className="text-sm text-gray-600">
+          <p>Powered by Auth0 + NestJS + TanStack</p>
+        </div>
+      </div>
+    </div>
   );
 }

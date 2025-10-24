@@ -1,7 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { SubmissionsService } from './submissions.service';
 
 @Controller('submissions')
+@UseGuards(AuthGuard('jwt')) // Protect all routes in this controller
 export class SubmissionsController {
   constructor(private readonly submissionsService: SubmissionsService) {}
 

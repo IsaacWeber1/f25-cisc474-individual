@@ -1,5 +1,6 @@
 import { createRouter } from '@tanstack/react-router';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
+import { Auth0Provider } from '@auth0/auth0-react';
 import * as TanstackQuery from './integrations/root-provider';
 
 // Import the generated route tree
@@ -15,9 +16,19 @@ export const getRouter = () => {
     defaultPreload: 'intent',
     Wrap: (props: { children: React.ReactNode }) => {
       return (
-        <TanstackQuery.Provider {...rqContext}>
-          {props.children}
-        </TanstackQuery.Provider>
+        <Auth0Provider
+          domain={import.meta.env.VITE_AUTH0_DOMAIN}
+          clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+          authorizationParams={{
+            redirect_uri: typeof window !== 'undefined' ? `${window.location.origin}/home` : undefined,
+            audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+            scope: 'openid profile email',
+          }}
+        >
+          <TanstackQuery.Provider {...rqContext}>
+            {props.children}
+          </TanstackQuery.Provider>
+        </Auth0Provider>
       );
     },
   });

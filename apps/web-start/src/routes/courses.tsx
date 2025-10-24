@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { PageLayout } from '../components/common/PageLayout';
+import { RequireAuth } from '../components/auth/RequireAuth';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Course } from '../types/api';
@@ -16,19 +17,21 @@ export const Route = createFileRoute('/courses')({
  * Courses Catalog Page
  *
  * Demonstrates TanStack Query promise resolution:
- * - Fetches all courses from backend API
+ * - Fetches all courses from backend API with authentication
  * - Promise resolved by TanStack Query at component level
  * - Automatic loading/error states
  * - Shows enrollment and assignment counts
  */
 function CoursesCatalog() {
+  const authFetcher = useAuthFetcher();
+
   const {
     data: courses,
     isLoading,
     error,
   } = useQuery({
     queryKey: ['courses'],
-    queryFn: backendFetcher<Array<Course>>('/courses'),
+    queryFn: () => authFetcher<Array<Course>>('/courses'),
   });
 
   if (isLoading) {
@@ -40,7 +43,8 @@ function CoursesCatalog() {
   }
 
   return (
-    <PageLayout currentUser={null}>
+    <RequireAuth>
+      <PageLayout currentUser={null}>
         <div style={{ marginBottom: '2rem' }}>
           <h1
             style={{
@@ -285,6 +289,7 @@ function CoursesCatalog() {
             );
           })}
         </div>
-    </PageLayout>
+      </PageLayout>
+    </RequireAuth>
   );
 }

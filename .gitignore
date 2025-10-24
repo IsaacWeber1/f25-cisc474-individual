@@ -69,4 +69,4 @@ pnpm-debug.log*
 
 
 server/dist
-public/dist
+public/distscripts/.env

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -16,6 +16,7 @@ export const Route = createFileRoute('/course/$id/assignments/')({
 });
 
 function AssignmentsListPage() {
+  const authFetcher = useAuthFetcher();
   const { id: courseId } = Route.useParams();
   const { currentUserId } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -23,7 +24,7 @@ function AssignmentsListPage() {
   // Fetch current user
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
-    queryFn: backendFetcher<User>(`/users/${currentUserId}`),
+    queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
   });
 
   // Fetch course with assignments
@@ -33,13 +34,13 @@ function AssignmentsListPage() {
     error: courseError,
   } = useQuery({
     queryKey: ['course', courseId],
-    queryFn: backendFetcher<Course>(`/courses/${courseId}`),
+    queryFn: () => authFetcher<Course>(`/courses/${courseId}`),
   });
 
   // Fetch all grades to determine submission status
   const { data: allGrades } = useQuery({
     queryKey: ['grades'],
-    queryFn: backendFetcher<Array<Grade>>('/grades'),
+    queryFn: () => authFetcher<Array<Grade>>('/grades'),
     enabled: !!currentUser,
   });
 

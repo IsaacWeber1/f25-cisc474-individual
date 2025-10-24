@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -13,6 +13,7 @@ export const Route = createFileRoute('/course/$id/')({
 });
 
 function CourseIndexPage() {
+  const authFetcher = useAuthFetcher();
   const { id: courseId } = Route.useParams();
   const { currentUserId } = useAuth();
 
@@ -23,7 +24,7 @@ function CourseIndexPage() {
     error,
   } = useQuery({
     queryKey: ['course', courseId],
-    queryFn: backendFetcher<Course>(`/courses/${courseId}`),
+    queryFn: () => authFetcher<Course>(`/courses/${courseId}`),
   });
 
   // Get user's role in this course

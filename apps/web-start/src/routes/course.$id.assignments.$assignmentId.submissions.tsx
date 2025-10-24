@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -17,18 +17,19 @@ export const Route = createFileRoute(
 });
 
 function SubmissionsPage() {
+  const authFetcher = useAuthFetcher();
   const { id: courseId, assignmentId } = Route.useParams();
   const { currentUserId } = useAuth();
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
 
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
-    queryFn: backendFetcher<User>(`/users/${currentUserId}`),
+    queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
   });
 
   const { data: course, error: courseError } = useQuery({
     queryKey: ['course', courseId],
-    queryFn: backendFetcher<Course>(`/courses/${courseId}`),
+    queryFn: () => authFetcher<Course>(`/courses/${courseId}`),
   });
 
   const {
@@ -37,17 +38,17 @@ function SubmissionsPage() {
     error: assignmentError,
   } = useQuery({
     queryKey: ['assignment', assignmentId],
-    queryFn: backendFetcher<Assignment>(`/assignments/${assignmentId}`),
+    queryFn: () => authFetcher<Assignment>(`/assignments/${assignmentId}`),
   });
 
   const { data: allGrades } = useQuery({
     queryKey: ['grades'],
-    queryFn: backendFetcher<Array<Grade>>('/grades'),
+    queryFn: () => authFetcher<Array<Grade>>('/grades'),
   });
 
   const { data: allUsers } = useQuery({
     queryKey: ['users'],
-    queryFn: backendFetcher<Array<User>>('/users'),
+    queryFn: () => authFetcher<Array<User>>('/users'),
   });
 
   if (assignmentLoading) {

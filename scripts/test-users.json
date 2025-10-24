@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "email": "john.student@example.edu",
+      "password": "TestPass123!",
+      "name": "John Student",
+      "role": "STUDENT",
+      "notes": "Has 4 submissions and 3 grades in database"
+    },
+    {
+      "email": "dr.bart@example.edu",
+      "password": "TestPass123!",
+      "name": "Dr. Bart",
+      "role": "PROFESSOR",
+      "notes": "Professor of CISC474, created 3 assignments"
+    },
+    {
+      "email": "mike.ta@example.edu",
+      "password": "TestPass123!",
+      "name": "Mike TA",
+      "role": "TA",
+      "notes": "TA for CISC474"
+    },
+    {
+      "email": "jane.doe@example.edu",
+      "password": "TestPass123!",
+      "name": "Jane Doe",
+      "role": "STUDENT",
+      "notes": "Has 2 submissions in database"
+    }
+  ]
+}

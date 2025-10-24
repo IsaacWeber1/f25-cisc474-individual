@@ -4,7 +4,7 @@ import { PageLayout } from '../components/common/PageLayout';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import type { User } from '../types/api';
 
 export const Route = createFileRoute('/api-demo')({
@@ -12,11 +12,12 @@ export const Route = createFileRoute('/api-demo')({
 });
 
 function ApiDemoPage() {
+  const authFetcher = useAuthFetcher();
   const { currentUserId } = useAuth();
 
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
-    queryFn: backendFetcher<User>(`/users/${currentUserId}`),
+    queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
   });
 
   return (

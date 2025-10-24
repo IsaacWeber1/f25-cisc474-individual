@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ApiDemoRouteImport } from './routes/api-demo'
 import { Route as IndexRouteImport } from './routes/index'
@@ -38,6 +39,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api-demo': typeof ApiDemoRoute
   '/courses': typeof CoursesRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/users': typeof UsersRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api-demo'
     | '/courses'
+    | '/home'
     | '/login'
     | '/profile'
     | '/users'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api-demo'
     | '/courses'
+    | '/home'
     | '/login'
     | '/profile'
     | '/users'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api-demo'
     | '/courses'
+    | '/home'
     | '/login'
     | '/profile'
     | '/users'
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiDemoRoute: typeof ApiDemoRoute
   CoursesRoute: typeof CoursesRoute
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   UsersRoute: typeof UsersRoute
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiDemoRoute: ApiDemoRoute,
   CoursesRoute: CoursesRoute,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   UsersRoute: UsersRoute,

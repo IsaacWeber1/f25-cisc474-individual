@@ -1,10 +1,11 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { PageLayout } from '../components/common/PageLayout';
+import { RequireAuth } from '../components/auth/RequireAuth';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { User } from '../types/api';
@@ -15,10 +16,11 @@ export const Route = createFileRoute('/users')({
 
 function UsersPage() {
   const { currentUserId } = useAuth();
+  const authFetcher = useAuthFetcher();
 
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
-    queryFn: backendFetcher<User>(`/users/${currentUserId}`),
+    queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
   });
 
   const {
@@ -27,7 +29,7 @@ function UsersPage() {
     error,
   } = useQuery({
     queryKey: ['users'],
-    queryFn: backendFetcher<Array<User>>('/users'),
+    queryFn: () => authFetcher<Array<User>>('/users'),
   });
 
   if (isLoading) {
@@ -50,8 +52,9 @@ function UsersPage() {
   };
 
   return (
-    <PageLayout currentUser={currentUser}>
-      <div style={{ marginBottom: '2rem' }}>
+    <RequireAuth>
+      <PageLayout currentUser={currentUser}>
+        <div style={{ marginBottom: '2rem' }}>
         <h1
           style={{
             fontSize: TYPOGRAPHY.sizes['3xl'],
@@ -168,6 +171,7 @@ function UsersPage() {
           </p>
         </div>
       )}
-    </PageLayout>
+      </PageLayout>
+    </RequireAuth>
   );
 }

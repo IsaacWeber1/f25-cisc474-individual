@@ -1,6 +1,9 @@
 import { Link, useRouterState } from '@tanstack/react-router';
+import { useAuth0 } from '@auth0/auth0-react';
 import { ROUTES } from '../config/routes';
 import { COLORS } from '../config/constants';
+import { LoginButton } from './auth/LoginButton';
+import { LogoutButton } from './auth/LogoutButton';
 import type { User } from '../types/api';
 
 interface NavigationProps {
@@ -10,6 +13,7 @@ interface NavigationProps {
 export default function Navigation({ currentUser }: NavigationProps) {
   const router = useRouterState();
   const pathname = router.location.pathname;
+  const { isAuthenticated, user, isLoading } = useAuth0();
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -121,18 +125,23 @@ export default function Navigation({ currentUser }: NavigationProps) {
             gap: '1rem',
           }}
         >
-          {currentUser ? (
+          {isLoading ? (
+            <span style={{ fontSize: '0.875rem' }}>Loading...</span>
+          ) : isAuthenticated ? (
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                gap: '1rem',
               }}
             >
-              <span style={{ fontSize: '0.875rem' }}>{currentUser.name}</span>
+              <span style={{ fontSize: '0.875rem' }}>
+                {user?.name || user?.email || 'User'}
+              </span>
+              <LogoutButton />
             </div>
           ) : (
-            <span style={{ fontSize: '0.875rem' }}>Not logged in</span>
+            <LoginButton />
           )}
         </div>
       </div>
