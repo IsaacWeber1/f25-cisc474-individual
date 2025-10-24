@@ -24,6 +24,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
+import { useAuthFetcher } from '../../integrations/authFetcher';
 
 interface UseCreateMutationOptions {
   /**
@@ -53,42 +54,24 @@ export function useCreateMutation<TResponse, TVariables>(
   options: UseCreateMutationOptions = {},
 ): UseMutationResult<TResponse, Error, TVariables> {
   const queryClient = useQueryClient();
-  const { invalidateKeys = [], backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000' } = options;
+  const authFetch = useAuthFetcher();
+  const { invalidateKeys = [] } = options;
 
   return useMutation({
     mutationFn: async (data: TVariables): Promise<TResponse> => {
-      const url = `${backendUrl}${endpoint}`;
-
-      console.log('[useCreateMutation] POST to:', url);
+      console.log('[useCreateMutation] POST to:', endpoint);
       console.log('[useCreateMutation] Data:', data);
 
-      const response = await fetch(url, {
+      const response = await authFetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-        signal: AbortSignal.timeout(30000), // 30 second timeout
       });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        let errorMessage = `Request failed: ${response.status} ${response.statusText}`;
-
-        try {
-          const errorJson = JSON.parse(errorBody);
-          errorMessage = errorJson.message || errorMessage;
-        } catch {
-          // Error body wasn't JSON, use default message
-        }
-
-        console.error('[useCreateMutation] Error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('[useCreateMutation] Success:', result);
-      return result as TResponse;
+      console.log('[useCreateMutation] Success:', response);
+      return response as TResponse;
     },
 
     onSuccess: () => {

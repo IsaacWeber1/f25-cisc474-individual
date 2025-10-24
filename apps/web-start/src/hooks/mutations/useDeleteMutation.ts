@@ -23,6 +23,7 @@ import type { UseMutationResult } from '@tanstack/react-query';
 import type { DeleteResponse } from '@repo/api/common';
 
 interface UseDeleteMutationOptions {
+import { useAuthFetcher } from '../../integrations/authFetcher';
   /**
    * Query keys to invalidate after successful deletion
    */
@@ -54,6 +55,7 @@ export function useDeleteMutation<TResponse = DeleteResponse>(
   options: UseDeleteMutationOptions = {},
 ): UseMutationResult<TResponse, Error, string> {
   const queryClient = useQueryClient();
+  const authFetch = useAuthFetcher();
   const {
     invalidateKeys = [],
     backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000',
@@ -67,7 +69,7 @@ export function useDeleteMutation<TResponse = DeleteResponse>(
 
       console.log('[useDeleteMutation] DELETE to:', url);
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: 'DELETE',
         signal: AbortSignal.timeout(30000),
       });
