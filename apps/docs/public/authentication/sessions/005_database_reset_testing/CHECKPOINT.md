@@ -24,7 +24,7 @@ After resolving the Supabase password special character issue in session 004, th
 ### Connection Resolution
 - Direct database connection (port 5432) worked immediately
 - Pooler connection (port 6543) required server restart to stabilize
-- Both URLs now using alphanumeric password: `CISC474Auth2025`
+- Both URLs now using alphanumeric password (redacted for security)
 
 ## Solution Implemented
 
@@ -82,7 +82,7 @@ The following should be tested manually in the browser:
 ## Current System State
 
 ### Database
-- **Connection**: Working with new password `CISC474Auth2025`
+- **Connection**: Working with new alphanumeric password
 - **Schema**: Includes auth0Id field on User table
 - **Migrations**: Initial migration applied successfully
 

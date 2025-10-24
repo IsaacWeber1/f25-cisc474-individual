@@ -79,7 +79,7 @@ npm run dev
 
 ### ✅ Alphanumeric Password Standard
 
-**Recommendation**: Use passwords like `CISC474Auth2025` or `WebTech474Assignment2025`
+**Recommendation**: Use passwords with only alphanumeric characters (avoid special characters that require URL encoding)
 
 **Benefits**:
 - No URL encoding required
