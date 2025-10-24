@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useAuth0 } from '@auth0/auth0-react';
 import { LogoutButton } from '../components/auth/LogoutButton';
 
