@@ -2,6 +2,7 @@
   "name": "cisc474-project-starter",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "turbo run build",
     "build:api": "turbo run build --filter=api",
     "clean": "turbo run clean",
