@@ -50,13 +50,11 @@ export class AssignmentsController {
    */
   @Post()
   async create(
+    @CurrentUser() user: any,
     @Body() dto: CreateAssignmentDto,
   ): Promise<AssignmentResponse> {
-    // TODO: Get userId from authentication context
-    // For now, using hardcoded user ID from database
-    const userId = 'cmfr0jaq30000k07aol19m3z1'; // Valid user ID
-
-    return await this.assignmentsService.create(dto, userId);
+    // Use authenticated user's ID
+    return await this.assignmentsService.create(dto, user.userId);
   }
 
   /**
