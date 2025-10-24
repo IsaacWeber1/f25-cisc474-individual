@@ -6,13 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { LinksService } from './links.service';
 
 import { CreateLinkDto } from '@repo/api/links/dto/create-link.dto';
 import { UpdateLinkDto } from '@repo/api/links/dto/update-link.dto';
 
 @Controller('links')
+@UseGuards(AuthGuard('jwt')) // Protect all routes in this controller
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 

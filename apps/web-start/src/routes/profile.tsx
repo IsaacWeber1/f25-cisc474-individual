@@ -1,10 +1,11 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { PageLayout } from '../components/common/PageLayout';
+import { RequireAuth } from '../components/auth/RequireAuth';
 import { ROUTES } from '../config/routes';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
 import type { Course, Grade, User } from '../types/api';
@@ -33,6 +34,7 @@ interface ActivityLog {
 function ProfilePage() {
   // Get current user ID from AuthContext
   const { currentUserId } = useAuth();
+  const authFetcher = useAuthFetcher();
   const userId = currentUserId;
 
   // Fetch user data
@@ -42,13 +44,13 @@ function ProfilePage() {
     error: userError,
   } = useQuery({
     queryKey: ['user', userId],
-    queryFn: backendFetcher<User>(`/users/${userId}`),
+    queryFn: () => authFetcher<User>(`/users/${userId}`),
   });
 
   // Fetch all grades to calculate stats
   const { data: allGrades } = useQuery({
     queryKey: ['grades'],
-    queryFn: backendFetcher<Array<Grade>>('/grades'),
+    queryFn: () => authFetcher<Array<Grade>>('/grades'),
     enabled: !!user,
   });
 
@@ -94,7 +96,8 @@ function ProfilePage() {
   }
 
   return (
-    <PageLayout currentUser={user}>
+    <RequireAuth>
+      <PageLayout currentUser={user}>
         {/* Profile Header */}
         <div
           style={{
@@ -522,6 +525,7 @@ function ProfilePage() {
             </div>
           </div>
         </div>
-    </PageLayout>
+      </PageLayout>
+    </RequireAuth>
   );
 }

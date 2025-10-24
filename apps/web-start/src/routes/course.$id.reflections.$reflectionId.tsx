@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -13,12 +13,13 @@ export const Route = createFileRoute('/course/$id/reflections/$reflectionId')({
 });
 
 function ReflectionDetailPage() {
+  const authFetcher = useAuthFetcher();
   const { id: courseId, reflectionId } = Route.useParams();
   const { currentUserId } = useAuth();
 
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
-    queryFn: backendFetcher<User>(`/users/${currentUserId}`),
+    queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
   });
 
   const {
@@ -27,12 +28,12 @@ function ReflectionDetailPage() {
     error,
   } = useQuery({
     queryKey: ['assignment', reflectionId],
-    queryFn: backendFetcher<Assignment>(`/assignments/${reflectionId}`),
+    queryFn: () => authFetcher<Assignment>(`/assignments/${reflectionId}`),
   });
 
   const { data: allGrades } = useQuery({
     queryKey: ['grades'],
-    queryFn: backendFetcher<Array<Grade>>('/grades'),
+    queryFn: () => authFetcher<Array<Grade>>('/grades'),
   });
 
   if (isLoading) {

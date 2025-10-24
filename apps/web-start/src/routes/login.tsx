@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { backendFetcher } from '../integrations/fetcher';
+import { useAuthFetcher } from '../integrations/authFetcher';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { COLORS, TYPOGRAPHY } from '../config/constants';
@@ -12,6 +12,7 @@ export const Route = createFileRoute('/login')({
 });
 
 function LoginPage() {
+  const authFetcher = useAuthFetcher();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ function LoginPage() {
     error,
   } = useQuery({
     queryKey: ['users'],
-    queryFn: backendFetcher<Array<User>>('/users'),
+    queryFn: () => authFetcher<Array<User>>('/users'),
   });
 
   // Filter to one student and one professor
