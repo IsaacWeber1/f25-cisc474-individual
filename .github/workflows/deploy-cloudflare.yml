@@ -35,7 +35,7 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ff949f9aed38f8cfe287760de2834101
           workingDirectory: 'apps/web-start'
           command: deploy --compatibility-date 2024-10-01
 
