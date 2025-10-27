@@ -9,6 +9,34 @@ export class UsersService {
    * Sync Auth0 user to database
    * Creates user if doesn't exist, updates if changed
    */
+  /**
+   * Get or create user by Auth0 ID only (when email/name not available in JWT)
+   * This is used by controllers that don't have access to email/name in the JWT token
+   */
+  async getUserByAuth0Id(auth0Id: string) {
+    console.log('[getUserByAuth0Id] Looking up user:', auth0Id);
+
+    const user = await this.prisma.user.findUnique({
+      where: { auth0Id },
+      include: {
+        enrollments: {
+          include: {
+            course: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error(
+        `User with Auth0 ID ${auth0Id} not found. User must complete profile setup first by visiting /users/me endpoint.`,
+      );
+    }
+
+    console.log('[getUserByAuth0Id] Found user:', user.id);
+    return user;
+  }
+
   async syncAuth0User(auth0User: {
     userId: string;
     email: string;
@@ -42,7 +70,8 @@ export class UsersService {
         newName: name,
       });
 
-      if (user.email !== email || user.name !== name) {
+      // Only update if email and name are provided and different
+      if (email && name && (user.email !== email || user.name !== name)) {
         console.log('[syncAuth0User] Updating user with new email/name');
         try {
           // Check if another user already has the target email (likely a seeded user)
@@ -120,17 +149,23 @@ export class UsersService {
       }
     } else {
       // Not found by auth0Id, try to find by email (for seeded users)
-      console.log('[syncAuth0User] Not found by auth0Id, trying email:', email);
-      user = await this.prisma.user.findUnique({
-        where: { email },
-        include: {
-          enrollments: {
-            include: {
-              course: true,
+      // Only attempt email lookup if email is provided
+      if (email) {
+        console.log('[syncAuth0User] Not found by auth0Id, trying email:', email);
+        user = await this.prisma.user.findUnique({
+          where: { email },
+          include: {
+            enrollments: {
+              include: {
+                course: true,
+              },
             },
           },
-        },
-      });
+        });
+      } else {
+        console.log('[syncAuth0User] Not found by auth0Id and no email provided');
+        user = null;
+      }
 
       console.log('[syncAuth0User] Found by email?', !!user);
 
