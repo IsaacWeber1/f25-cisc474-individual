@@ -25,6 +25,7 @@ function AssignmentsListPage() {
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
     queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
+    enabled: !!currentUserId, // Don't fetch if currentUserId is null
   });
 
   // Fetch course with assignments

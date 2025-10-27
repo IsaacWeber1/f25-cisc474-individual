@@ -97,8 +97,22 @@ export class UsersService {
             });
             console.log('[syncAuth0User] User updated successfully');
           }
-        } catch (error) {
-          console.error('[syncAuth0User] Update failed:', error);
+        } catch (error: any) {
+          console.error('[syncAuth0User] Update failed with full error details:');
+          console.error('Error name:', error.name);
+          console.error('Error message:', error.message);
+          console.error('Error code:', error.code);
+          console.error('Error meta:', error.meta);
+          console.error('Full error object:', JSON.stringify(error, null, 2));
+
+          // Log the data that was being used in the failed update
+          console.error('Failed update data:', {
+            email,
+            name,
+            emailVerified,
+            emailVerifiedDate: emailVerified ? new Date() : null,
+            currentUserId: user.id
+          });
           throw error;
         }
       } else {
@@ -121,24 +135,63 @@ export class UsersService {
       console.log('[syncAuth0User] Found by email?', !!user);
 
       if (user) {
-        // Found by email - this is a seeded user, update with auth0Id
-        console.log('[syncAuth0User] Updating seeded user with auth0Id:', user.id);
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            auth0Id,
-            name, // Update name in case it changed
-            emailVerified: emailVerified ? new Date() : null,
-          },
-          include: {
-            enrollments: {
-              include: {
-                course: true,
-              },
-            },
-          },
+        // Found by email - this is a seeded user, check if we need to update
+        console.log('[syncAuth0User] Found seeded user:', {
+          id: user.id,
+          currentAuth0Id: user.auth0Id,
+          newAuth0Id: auth0Id,
+          currentName: user.name,
+          newName: name,
         });
-        console.log('[syncAuth0User] Successfully updated user');
+
+        // Check if any update is actually needed
+        const needsUpdate = user.auth0Id !== auth0Id || user.name !== name;
+
+        if (needsUpdate) {
+          console.log('[syncAuth0User] Updating seeded user with auth0Id:', user.id);
+          console.log('[syncAuth0User] Update data:', {
+            auth0Id,
+            name,
+            emailVerified,
+            emailVerifiedDate: emailVerified ? new Date() : null,
+          });
+
+          try {
+            user = await this.prisma.user.update({
+              where: { id: user.id },
+              data: {
+                auth0Id,
+                name, // Update name in case it changed
+                emailVerified: emailVerified ? new Date() : null,
+              },
+              include: {
+                enrollments: {
+                  include: {
+                    course: true,
+                  },
+                },
+              },
+            });
+            console.log('[syncAuth0User] Successfully updated user');
+          } catch (error: any) {
+            console.error('[syncAuth0User] Seeded user update failed with full error details:');
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            console.error('Error meta:', error.meta);
+            console.error('Full error object:', JSON.stringify(error, null, 2));
+            console.error('Failed update data:', {
+              auth0Id,
+              name,
+              emailVerified,
+              emailVerifiedDate: emailVerified ? new Date() : null,
+              currentUserId: user.id
+            });
+            throw error;
+          }
+        } else {
+          console.log('[syncAuth0User] No update needed for seeded user - auth0Id and name are already correct');
+        }
       } else {
         // User doesn't exist at all - create new user
         console.log('[syncAuth0User] Creating new user');

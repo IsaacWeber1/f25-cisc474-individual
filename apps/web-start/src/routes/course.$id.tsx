@@ -17,6 +17,7 @@ function CourseLayout() {
   const { data: currentUser } = useQuery({
     queryKey: ['user', currentUserId],
     queryFn: () => authFetcher<User>(`/users/${currentUserId}`),
+    enabled: !!currentUserId, // Don't fetch if currentUserId is null
   });
 
   return (
