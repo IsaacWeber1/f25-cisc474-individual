@@ -57,8 +57,13 @@ export class AssignmentsController {
     @CurrentUser() user: any,
     @Body() dto: CreateAssignmentDto,
   ): Promise<AssignmentResponse> {
-    // Get database user ID from Auth0 ID
-    const dbUser = await this.usersService.findByAuth0Id(user.userId);
+    // Sync user if needed and get database user
+    const dbUser = await this.usersService.syncAuth0User({
+      userId: user.userId,
+      email: user.email,
+      name: user.name || user.email?.split('@')[0] || 'Unknown User',
+      emailVerified: true,
+    });
     return await this.assignmentsService.create(dto, dbUser.id);
   }
 
